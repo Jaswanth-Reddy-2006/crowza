@@ -1,0 +1,26 @@
+{
+  "name": "@crowza/design-system",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "react": "^18.0.0",
+    "react-native": "*",
+    "expo-linear-gradient": "~12.1.2",
+    "expo-blur": "~12.2.2"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.0",
+    "typescript": "^5.0.0"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "jsx": "react-native",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@shared/*": ["../../packages/shared/src/*"],
+      "@design/*": ["../../packages/design-system/src/*"],
+      "@crowza/shared": ["../../packages/shared/src/index.ts"],
+      "@crowza/design-system": ["../../packages/design-system/src/index.ts"]
+    }
+  },
+  "include": ["src/**/*"]
+}

@@ -1,0 +1,21 @@
+{
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "prettier"
+  ],
+  "rules": {
+    "@typescript-eslint/no-explicit-any": "error",
+    "max-lines": ["error", { "max": 400, "skipBlankLines": true, "skipComments": true }],
+    "complexity": ["error", 10],
+    "no-console": "warn"
+  },
+  "env": {
+    "node": true,
+    "jest": true,
+    "browser": true
+  }
+}

@@ -1,0 +1,8 @@
+:root {
+  --primary: #FF9800;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+}
