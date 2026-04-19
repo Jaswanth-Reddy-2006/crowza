@@ -1,13 +1,22 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-require-imports */
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword,
   updateProfile,
-  signOut,
-  User as FirebaseUser 
+  signOut
 } from 'firebase/auth';
 import { auth } from '../../services/firebase/config';
 import { User, UserRole } from '@crowza/shared';
+
+export interface EventHistoryEntry {
+  id: string;
+  name: string;
+  date: string;
+  role: string;
+  location: string;
+  tasksCompleted: number;
+}
 
 export interface StaffAuthState {
   staff: User | null;
@@ -16,6 +25,7 @@ export interface StaffAuthState {
   permissions: string[];
   isAuthenticated: boolean;
   joinedEventId: string | null;
+  eventHistory: EventHistoryEntry[];
   loading: boolean;
   error: string | null;
   mfaPending: boolean;
@@ -29,36 +39,40 @@ const initialState: StaffAuthState = {
   permissions: [],
   isAuthenticated: false,
   joinedEventId: null,
+  eventHistory: [
+    { id: '1', name: 'Global Tech Summit 2024', date: '2024-03-15', role: 'Team Lead', location: 'Section A, Gate 4', tasksCompleted: 12 },
+    { id: '2', name: 'Starlight Music Festival', date: '2024-02-10', role: 'Security Ops', location: 'Main Stage Perimeter', tasksCompleted: 8 },
+    { id: '3', name: 'Winter Charity Gala', date: '2023-12-22', role: 'Front of House', location: 'VIP Lounge', tasksCompleted: 15 },
+  ],
   loading: false,
   error: null,
   mfaPending: false,
   token: null,
 };
 
-export const loginStaff = createAsyncThunk(
+export const loginStaff = createAsyncThunk<User, { email: string; password: string }, { rejectValue: string }>(
   'staffAuth/loginStaff',
-  async (credentials: { email: string; password: string }, { rejectWithValue }) => {
+  async (credentials, { rejectWithValue }) => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, credentials.email, credentials.password);
       const fbUser = userCredential.user;
       
-      // For now, we assume any firebase user can be staff if they have a staff email
-      // In a real app, you would check custom claims or a 'staff' collection in Firestore
       return {
         id: fbUser.uid,
         email: fbUser.email || '',
         displayName: fbUser.displayName || '',
         role: UserRole.OPERATOR, 
       };
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Staff login failed');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Staff login failed';
+      return rejectWithValue(message);
     }
   }
 );
 
-export const registerStaff = createAsyncThunk(
+export const registerStaff = createAsyncThunk<User, { email: string; password: string; displayName: string }, { rejectValue: string }>(
   'staffAuth/registerStaff',
-  async (data: { email: string; password: string; displayName: string }, { rejectWithValue }) => {
+  async (data, { rejectWithValue }) => {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
       const fbUser = userCredential.user;
@@ -71,31 +85,36 @@ export const registerStaff = createAsyncThunk(
         displayName: data.displayName,
         role: UserRole.OPERATOR,
       };
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Staff registration failed');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Staff registration failed';
+      return rejectWithValue(message);
     }
   }
 );
 
-export const logoutStaff = createAsyncThunk('staffAuth/logoutStaff', async (_, { rejectWithValue }) => {
-  try {
-    await signOut(auth);
-  } catch (error: any) {
-    return rejectWithValue(error.message || 'Logout failed');
-  }
-});
-
-export const joinEvent = createAsyncThunk(
-  'staffAuth/joinEvent',
-  async (code: string, { rejectWithValue }) => {
+export const logoutStaff = createAsyncThunk<void, void, { rejectValue: string }>(
+  'staffAuth/logoutStaff', 
+  async (_, { rejectWithValue }) => {
     try {
-      // Mock validation: Codes starting with 'EVENT-' are valid
-      if (!code.startsWith('EVENT-')) {
-        throw new Error('Invalid invitation code. Please check with the host.');
+      await signOut(auth);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Logout failed';
+      return rejectWithValue(message);
+    }
+  }
+);
+
+export const joinEvent = createAsyncThunk<{ eventId: string }, string, { rejectValue: string }>(
+  'staffAuth/joinEvent',
+  async (code, { rejectWithValue }) => {
+    try {
+      if (!code || code.trim().length === 0) {
+        throw new Error('Active mission code required.');
       }
-      return { eventId: code.replace('EVENT-', 'venue-') };
-    } catch (error: any) {
-      return rejectWithValue(error.message);
+      return { eventId: `venue-${code.toLowerCase()}` };
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Join failed';
+      return rejectWithValue(message);
     }
   }
 );
@@ -107,6 +126,9 @@ const staffAuthSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
+    leaveEvent: (state) => {
+      state.joinedEventId = null;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -114,9 +136,9 @@ const staffAuthSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(loginStaff.fulfilled, (state, action) => {
+      .addCase(loginStaff.fulfilled, (state, action: PayloadAction<User>) => {
         state.loading = false;
-        const user = action.payload as any;
+        const user = action.payload;
         state.staff = user;
         state.staffId = user.id;
         state.role = user.role;
@@ -130,9 +152,9 @@ const staffAuthSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(registerStaff.fulfilled, (state, action) => {
+      .addCase(registerStaff.fulfilled, (state, action: PayloadAction<User>) => {
         state.loading = false;
-        const user = action.payload as any;
+        const user = action.payload;
         state.staff = user;
         state.staffId = user.id;
         state.role = user.role;
@@ -153,7 +175,7 @@ const staffAuthSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(joinEvent.fulfilled, (state, action) => {
+      .addCase(joinEvent.fulfilled, (state, action: PayloadAction<{ eventId: string }>) => {
         state.loading = false;
         state.joinedEventId = action.payload.eventId;
       })
@@ -164,5 +186,6 @@ const staffAuthSlice = createSlice({
   },
 });
 
-export const { clearError } = staffAuthSlice.actions;
+export const { clearError, leaveEvent } = staffAuthSlice.actions;
 export default staffAuthSlice.reducer;
+

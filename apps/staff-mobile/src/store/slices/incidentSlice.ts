@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, @typescript-eslint/no-require-imports */
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Incident } from '@shared/types/incident';
 

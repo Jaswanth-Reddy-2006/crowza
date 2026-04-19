@@ -1,0 +1,614 @@
+/* ==========================================
+   RESPONSIVE DESIGN SYSTEM
+   Mobile-First Approach
+   ========================================== */
+
+/* ==========================================
+   BREAKPOINTS
+   ========================================== */
+:root {
+  /* Screen sizes */
+  --mobile-sm: 320px;     /* Small phones */
+  --mobile-md: 375px;     /* Standard phones */
+  --mobile-lg: 425px;     /* Large phones */
+  --tablet: 768px;        /* Tablets */
+  --desktop: 1024px;      /* Small desktop */
+  --desktop-lg: 1440px;   /* Large desktop */
+  
+  /* Touch targets */
+  --touch-target: 44px;   /* Minimum touch size */
+  
+  /* Spacing scale */
+  --space-xs: 0.25rem;    /* 4px */
+  --space-sm: 0.5rem;     /* 8px */
+  --space-md: 1rem;       /* 16px */
+  --space-lg: 1.5rem;     /* 24px */
+  --space-xl: 2rem;       /* 32px */
+  --space-2xl: 3rem;      /* 48px */
+  
+  /* Typography - Mobile First */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+}
+
+/* ==========================================
+   GLOBAL RESPONSIVE STYLES
+   ========================================== */
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  -webkit-font-smoothing: antialiased;
+  -webkit-touch-callout: none;
+}
+
+/* ==========================================
+   MOBILE FIRST - Base Styles (320px+)
+   ========================================== */
+
+body {
+  font-size: var(--text-base);
+  line-height: 1.5;
+  padding: 0;
+  margin: 0;
+}
+
+button, input, textarea, select {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+button {
+  min-height: var(--touch-target);
+  min-width: var(--touch-target);
+  padding: 0.75rem 1rem;
+}
+
+input, textarea {
+  min-height: var(--touch-target);
+  padding: 0.75rem;
+  font-size: 16px; /* Prevents zoom on iOS */
+}
+
+/* ==========================================
+   MOBILE - Phone Sizes (320px - 425px)
+   ========================================== */
+
+/* Container padding for mobile */
+.container {
+  padding: var(--space-md);
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Stack all grids vertically on mobile */
+.grid, [style*="display: grid"] {
+  grid-template-columns: 1fr !important;
+}
+
+/* Full width on mobile */
+.card, [style*="border: 1px solid"] {
+  width: 100%;
+  margin-bottom: var(--space-md);
+}
+
+/* Mobile navigation */
+nav {
+  padding: var(--space-md);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+nav button {
+  padding: var(--space-sm) var(--space-md);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Mobile menu - hamburger style */
+.menu-toggle {
+  display: block;
+  width: var(--touch-target);
+  height: var(--touch-target);
+  padding: 0.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* Modal/Dialog - Full screen on mobile */
+[role="dialog"], .modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  padding: 0;
+  max-width: 100%;
+}
+
+/* Form - Single column on mobile */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+input, textarea, select {
+  width: 100%;
+}
+
+/* Typography - Mobile sizes */
+h1 {
+  font-size: var(--text-2xl);
+  line-height: 1.2;
+  margin: var(--space-md) 0;
+}
+
+h2 {
+  font-size: var(--text-xl);
+  line-height: 1.3;
+  margin: var(--space-lg) 0;
+}
+
+h3 {
+  font-size: var(--text-lg);
+  line-height: 1.3;
+  margin: var(--space-md) 0;
+}
+
+/* Tables - Horizontal scroll on mobile */
+table {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  display: block;
+}
+
+thead {
+  display: none; /* Hide headers on mobile */
+}
+
+tbody tr {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid #E5E7EB;
+  margin-bottom: var(--space-md);
+  padding: var(--space-md) 0;
+}
+
+tbody td {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-sm) 0;
+  font-size: var(--text-sm);
+}
+
+tbody td::before {
+  content: attr(data-label);
+  font-weight: 600;
+  flex: 1;
+  margin-right: var(--space-sm);
+}
+
+/* ==========================================
+   TABLET - Medium Devices (768px+)
+   ========================================== */
+
+@media (min-width: 768px) {
+  :root {
+    --text-xs: 0.75rem;
+    --text-sm: 0.875rem;
+    --text-base: 1rem;
+    --text-lg: 1.125rem;
+    --text-xl: 1.25rem;
+    --text-2xl: 1.5rem;
+    --text-3xl: 2rem;
+    --text-4xl: 2.5rem;
+  }
+
+  body {
+    font-size: var(--text-base);
+  }
+
+  .container {
+    padding: var(--space-lg);
+    max-width: 768px;
+    margin: 0 auto;
+  }
+
+  /* Two-column grid on tablet */
+  [style*="grid-template-columns: repeat"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Show more space for cards */
+  .card {
+    width: 100%;
+    margin-bottom: var(--space-lg);
+  }
+
+  /* Menu - Horizontal on tablet */
+  nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-lg);
+  }
+
+  .menu-toggle {
+    display: none;
+  }
+
+  nav button {
+    padding: var(--space-md) var(--space-lg);
+    font-size: var(--text-base);
+  }
+
+  /* Form - Two columns where applicable */
+  form.two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-lg);
+  }
+
+  form.two-col > *:last-child {
+    grid-column: 1 / -1;
+  }
+
+  /* Typography - Tablet sizes */
+  h1 {
+    font-size: var(--text-3xl);
+  }
+
+  h2 {
+    font-size: var(--text-2xl);
+  }
+
+  /* Table - Show headers on tablet */
+  thead {
+    display: table-header-group;
+  }
+
+  tbody tr {
+    display: table-row;
+  }
+
+  tbody td {
+    display: table-cell;
+    padding: var(--space-md);
+  }
+
+  tbody td::before {
+    content: none;
+  }
+
+  /* Modal - Centered on tablet */
+  [role="dialog"], .modal {
+    position: fixed;
+    max-width: 90%;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    height: auto;
+    bottom: auto;
+    right: auto;
+    border-radius: 0.75rem;
+  }
+}
+
+/* ==========================================
+   DESKTOP - Large Devices (1024px+)
+   ========================================== */
+
+@media (min-width: 1024px) {
+  :root {
+    --text-xs: 0.75rem;
+    --text-sm: 0.875rem;
+    --text-base: 1rem;
+    --text-lg: 1.125rem;
+    --text-xl: 1.375rem;
+    --text-2xl: 1.75rem;
+    --text-3xl: 2.25rem;
+    --text-4xl: 3rem;
+  }
+
+  .container {
+    padding: var(--space-xl);
+    max-width: 1024px;
+    margin: 0 auto;
+  }
+
+  /* Three-column grid on desktop */
+  [style*="grid-template-columns: repeat"] {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+
+  /* Menu - Spread out on desktop */
+  nav {
+    padding: var(--space-xl);
+    gap: var(--space-xl);
+  }
+
+  nav button {
+    padding: var(--space-md) var(--space-xl);
+    font-size: var(--text-base);
+  }
+
+  /* Form - Multi-column layouts */
+  form.two-col {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  form.three-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: var(--space-xl);
+  }
+
+  form.three-col > *:last-child {
+    grid-column: 1 / -1;
+  }
+
+  /* Typography - Desktop sizes */
+  h1 {
+    font-size: var(--text-4xl);
+  }
+
+  h2 {
+    font-size: var(--text-3xl);
+  }
+}
+
+/* ==========================================
+   LARGE DESKTOP - Extra Large (1440px+)
+   ========================================== */
+
+@media (min-width: 1440px) {
+  .container {
+    max-width: 1440px;
+    padding: var(--space-2xl);
+  }
+
+  /* Four-column grid on large desktop */
+  [style*="grid-template-columns: repeat"] {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+
+  nav {
+    padding: var(--space-2xl);
+    gap: var(--space-2xl);
+  }
+}
+
+/* ==========================================
+   UTILITY CLASSES - Responsive Visibility
+   ========================================== */
+
+.hide-mobile {
+  display: none;
+}
+
+.hide-tablet {
+  display: block;
+}
+
+.hide-desktop {
+  display: block;
+}
+
+@media (min-width: 768px) {
+  .hide-mobile {
+    display: block;
+  }
+
+  .hide-tablet {
+    display: none;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hide-tablet {
+    display: block;
+  }
+
+  .hide-desktop {
+    display: none;
+  }
+}
+
+/* ==========================================
+   RESPONSIVE FLEXBOX UTILITIES
+   ========================================== */
+
+.flex-responsive {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+@media (min-width: 768px) {
+  .flex-responsive {
+    flex-direction: row;
+    gap: var(--space-lg);
+  }
+}
+
+/* ==========================================
+   RESPONSIVE PADDING/MARGIN UTILITIES
+   ========================================== */
+
+.p-responsive {
+  padding: var(--space-md);
+}
+
+@media (min-width: 768px) {
+  .p-responsive {
+    padding: var(--space-lg);
+  }
+}
+
+@media (min-width: 1024px) {
+  .p-responsive {
+    padding: var(--space-xl);
+  }
+}
+
+/* ==========================================
+   TOUCH DEVICE OPTIMIZATIONS
+   ========================================== */
+
+@media (hover: hover) and (pointer: fine) {
+  /* Desktop hover effects */
+  button:hover,
+  a:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  /* Touch device - larger touch targets */
+  button,
+  a,
+  input,
+  textarea,
+  select {
+    min-height: var(--touch-target);
+    min-width: var(--touch-target);
+  }
+
+  /* Remove hover effects on touch */
+  button:hover,
+  a:hover {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Add active states for touch */
+  button:active,
+  a:active {
+    opacity: 0.8;
+  }
+}
+
+/* ==========================================
+   LANDSCAPE ORIENTATION - Mobile
+   ========================================== */
+
+@media (max-height: 500px) and (orientation: landscape) {
+  h1 {
+    font-size: var(--text-xl);
+    margin: var(--space-sm) 0;
+  }
+
+  h2 {
+    font-size: var(--text-lg);
+    margin: var(--space-sm) 0;
+  }
+
+  .container {
+    padding: var(--space-sm);
+  }
+
+  nav {
+    padding: var(--space-sm);
+  }
+
+  form {
+    gap: var(--space-sm);
+  }
+}
+
+/* ==========================================
+   RESPONSIVE IMAGES
+   ========================================== */
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+picture {
+  display: block;
+  max-width: 100%;
+}
+
+/* ==========================================
+   SCROLLING OPTIMIZATION
+   ========================================== */
+
+.scroll-x {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  overflow-y: hidden;
+}
+
+.scroll-y {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overflow-x: hidden;
+}
+
+/* Hide scrollbars on iOS */
+@supports (-webkit-touch-callout: none) {
+  .scroll-x::-webkit-scrollbar,
+  .scroll-y::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* ==========================================
+   RESPONSIVE GRID FALLBACK
+   ========================================== */
+
+@supports not (display: grid) {
+  [style*="display: grid"] {
+    display: flex;
+    flex-direction: column;
+  }
+
+  [style*="grid-template-columns"] {
+    flex-direction: column;
+  }
+}
+
+/* ==========================================
+   PRINT STYLES - Responsive for printing
+   ========================================== */
+
+@media print {
+  .hide-print {
+    display: none !important;
+  }
+
+  .container {
+    max-width: 100%;
+  }
+
+  nav,
+  button {
+    display: none;
+  }
+
+  body {
+    font-size: 12pt;
+    line-height: 1.5;
+  }
+}

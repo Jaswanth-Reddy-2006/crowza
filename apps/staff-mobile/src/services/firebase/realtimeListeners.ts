@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, @typescript-eslint/no-require-imports */
 import { collection, doc, onSnapshot, query, where } from 'firebase/firestore';
 import { db } from './config';
 import { AppDispatch } from '../../store/store';

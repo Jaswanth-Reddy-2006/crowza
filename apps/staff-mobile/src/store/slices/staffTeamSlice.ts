@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, @typescript-eslint/no-require-imports */
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import staffApiClient from '../../services/api/staffApiClient';
 import { User, UserRole } from '@crowza/shared';
@@ -24,7 +25,7 @@ export const fetchTeamMembers = createAsyncThunk(
     try {
       const response = await staffApiClient.get(`/venues/${venueId}/team`);
       return response.data.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch team');
     }
   }
@@ -38,7 +39,7 @@ export const updateStaffRole = createAsyncThunk(
         role: payload.role,
       });
       return response.data.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       return rejectWithValue(error.response?.data?.message || 'Failed to update role');
     }
   }

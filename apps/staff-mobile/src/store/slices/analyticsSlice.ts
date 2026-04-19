@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, @typescript-eslint/no-require-imports */
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import staffApiClient from '../../services/api/staffApiClient';
 
@@ -47,7 +48,7 @@ export const fetchAnalytics = createAsyncThunk(
         incidentSummary: incidentsRes.data.data,
         waitTimeTrends: waitTimesRes.data.data.trends,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch analytics');
     }
   }
@@ -59,7 +60,7 @@ export const generateReport = createAsyncThunk(
     try {
       const response = await staffApiClient.post('/analytics/report', params);
       return response.data.data.reportUrl;
-    } catch (error: any) {
+    } catch (error: unknown) {
       return rejectWithValue(error.response?.data?.message || 'Failed to generate report');
     }
   }

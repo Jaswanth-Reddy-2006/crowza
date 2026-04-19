@@ -1,171 +1,105 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   StyleSheet,
-  Dimensions,
   TouchableOpacity,
-  ScrollView,
   Animated,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { theme, TonalCard, Typography, SignatureButton } from '@crowza/design-system';
+import { theme, Typography } from '@crowza/design-system';
 import { Ionicons } from '@expo/vector-icons';
-import { useAppSelector } from '../utils/hooks';
+import { VenueFloorPlan } from '../components/VenueFloorPlan';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+// Modular Components
+import { IntelligenceNodeCard } from './Radar/components/IntelligenceNodeCard';
+import { SectorSensorList } from './Radar/components/SectorSensorList';
 
-// Mock data for heat map nodes
-const HOTSPOTS = [
-  { id: '1', name: 'Main Gate', occupancy: 0.85, x: 120, y: 180, growth: '+12%' },
-  { id: '2', name: 'Zone B', occupancy: 0.92, x: 280, y: 220, growth: '+5%' },
-  { id: '3', name: 'Food Court', occupancy: 0.45, x: 180, y: 350, growth: '-2%' },
-  { id: '4', name: 'North Stand', occupancy: 0.78, x: 250, y: 120, growth: '+8%' },
+export interface IntelNode {
+  id: string;
+  name: string;
+  type: string;
+  polygon: number[][];
+}
+
+const STADIUM_ZONES: IntelNode[] = [
+  { id: 'north_stand', name: 'North Stand', type: 'stand', polygon: [[200, 50], [800, 50], [700, 200], [300, 200]] },
+  { id: 'south_stand', name: 'South Stand', type: 'stand', polygon: [[200, 950], [800, 950], [700, 800], [300, 800]] },
+  { id: 'pavilion', name: 'Pavilion', type: 'premium', polygon: [[50, 400], [50, 600], [150, 600], [150, 400]] },
+  { id: 'elite_restaurant', name: 'Elite Restaurant', type: 'amenity', polygon: [[850, 400], [850, 600], [950, 600], [950, 400]] },
+  { id: 'east_wing', name: 'East Wing', type: 'stand', polygon: [[700, 250], [900, 250], [900, 750], [700, 750]] },
+  { id: 'west_wing', name: 'West Wing', type: 'stand', polygon: [[100, 250], [300, 250], [300, 750], [100, 750]] },
+];
+
+const ROUTE_TO_RESTAURANT = "150,500 250,500 250,400 500,400 750,400 850,500";
+const SECTOR_SENSORS = [
+  { id: '1', name: 'Sector A-4', status: 'optimal', density: 'Low' },
+  { id: '2', name: 'Sector B-1', status: 'critical', density: 'Heavy' },
+  { id: '3', name: 'VIP Gallery', status: 'optimal', density: 'Stable' },
 ];
 
 export default function RadarIntelligenceScreen() {
   const insets = useSafeAreaInsets();
-  const [activeNode, setActiveNode] = useState(HOTSPOTS[0]);
-  const pulseAnim = new Animated.Value(0);
+  const [activeNode, setActiveNode] = useState<IntelNode>(STADIUM_ZONES[0]);
+
+  const [navigationActive, setNavigationActive] = useState(false);
+  const pulseAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.loop(
       Animated.sequence([
-        Animated.timing(pulseAnim, { toValue: 1, duration: 2000, useNativeDriver: true }),
-        Animated.timing(pulseAnim, { toValue: 0, duration: 2000, useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 1, duration: 2500, useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 0, duration: 2500, useNativeDriver: true }),
       ])
     ).start();
-  }, []);
+  }, [pulseAnim]);
 
   return (
-    <View style={[styles.container, { backgroundColor: '#050505' }]}>
-      {/* HUD Header */}
-      <View style={[styles.hudHeader, { paddingTop: insets.top + 20 }]}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
+      <View style={styles.header}>
          <View>
-            <Typography variant="labelSmall" color={theme.colors.primary} style={{ letterSpacing: 3 }}>RADAR INTELLIGENCE</Typography>
-            <Typography variant="headlineMedium" color="white" weight="800">Operational Map</Typography>
+            <Typography variant="labelSmall" color={theme.colors.primary} weight="900" style={{ letterSpacing: 2 }}>STADIUM RADAR • LIVE</Typography>
+            <Typography variant="headlineMedium" weight="900">Narendra Modi Stadium</Typography>
          </View>
-         <TouchableOpacity style={styles.syncBtn}>
-            <Ionicons name="sync" size={20} color={theme.colors.primary} />
-         </TouchableOpacity>
+         <TouchableOpacity style={styles.layerBtn}><Ionicons name="layers-outline" size={20} color="black" /></TouchableOpacity>
       </View>
 
-      {/* Main Radar View */}
-      <View style={styles.radarContainer}>
-         <View style={styles.radarCircle}>
-            {/* Grid Lines */}
-            <View style={styles.gridV} />
-            <View style={styles.gridH} />
-            
-            {/* Hotspots */}
-            {HOTSPOTS.map((node) => (
-              <TouchableOpacity 
-                key={node.id} 
-                style={[styles.node, { left: node.x, top: node.y }]}
-                onPress={() => setActiveNode(node)}
-              >
-                 <Animated.View style={[
-                   styles.nodePulse, 
-                   { 
-                     opacity: pulseAnim, 
-                     transform: [{ scale: pulseAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 2.5] }) }],
-                     backgroundColor: node.occupancy > 0.8 ? theme.colors.error : theme.colors.primary
-                   }
-                 ]} />
-                 <View style={[
-                   styles.nodeCore, 
-                   { backgroundColor: node.occupancy > 0.8 ? theme.colors.error : theme.colors.primary }
-                 ]} />
-              </TouchableOpacity>
-            ))}
-         </View>
+      <View style={styles.mapShell}>
+         <VenueFloorPlan
+            zones={STADIUM_ZONES} selectedZoneId={activeNode.id}
+            onZonePress={(id) => {
+              const found = STADIUM_ZONES.find(z => z.id === id);
+              if (found) setActiveNode(found);
+            }}
+            routePoints={navigationActive ? ROUTE_TO_RESTAURANT : undefined}
+         />
+         {navigationActive && (
+            <View style={styles.navBar} pointerEvents="none">
+               <View style={styles.navBadge}>
+                  <Ionicons name="navigate" size={16} color="#FFF" />
+                  <Typography variant="labelSmall" color="#FFF" weight="900" style={{ marginLeft: 8 }}>NAVIGATING TO RESTAURANT</Typography>
+               </View>
+            </View>
+         )}
       </View>
 
-      {/* Intelligence Data Sheet */}
-      <View style={[styles.dataSheet, { paddingBottom: insets.bottom + 20 }]}>
-         <TonalCard variant="highest" style={styles.infoCard}>
-            <View style={styles.infoTop}>
-               <View>
-                  <Typography variant="titleLarge" color="white" weight="800">{activeNode.name}</Typography>
-                  <Typography variant="labelSmall" color={theme.colors.outline}>ZONE SECTOR • RADAR SCAN ACTIVE</Typography>
-               </View>
-               <View style={styles.growthBadge}>
-                  <Typography variant="labelSmall" color={theme.colors.primary} weight="700">{activeNode.growth}</Typography>
-               </View>
-            </View>
-
-            <View style={styles.metricsRow}>
-               <View style={styles.metric}>
-                  <Typography variant="labelSmall" color={theme.colors.outline}>OCCUPANCY</Typography>
-                  <Typography variant="headlineSmall" color="white" weight="800">{(activeNode.occupancy * 100).toFixed(0)}%</Typography>
-               </View>
-               <View style={styles.metricDivider} />
-               <View style={styles.metric}>
-                  <Typography variant="labelSmall" color={theme.colors.outline}>TRAFFIC</Typography>
-                  <Typography variant="headlineSmall" color="white" weight="800">CRITICAL</Typography>
-               </View>
-               <View style={styles.metricDivider} />
-               <View style={styles.metric}>
-                  <Typography variant="labelSmall" color={theme.colors.outline}>SENSORS</Typography>
-                  <Typography variant="headlineSmall" color="white" weight="800">ACTIVE</Typography>
-               </View>
-            </View>
-
-            <SignatureButton 
-              label="DISPATCH UNITS" 
-              onPress={() => {}} 
-              style={{ marginTop: 24 }}
-            />
-         </TonalCard>
-
-         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.quickSelect}>
-            {HOTSPOTS.map((node) => (
-              <TouchableOpacity 
-                key={node.id} 
-                onPress={() => setActiveNode(node)}
-                style={[styles.nodeSelect, activeNode.id === node.id && styles.nodeSelectActive]}
-              >
-                 <Typography 
-                   variant="labelSmall" 
-                   color={activeNode.id === node.id ? theme.colors.primary : theme.colors.outline}
-                   weight="700"
-                 >
-                   {node.name.toUpperCase()}
-                 </Typography>
-              </TouchableOpacity>
-            ))}
-         </ScrollView>
+      <View style={[styles.controlSheet, { marginBottom: insets.bottom + 10 }]}>
+         <IntelligenceNodeCard 
+            activeNode={activeNode}
+            navigationActive={navigationActive}
+            setNavigationActive={setNavigationActive}
+         />
+         <SectorSensorList sensors={SECTOR_SENSORS} />
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  hudHeader: { paddingHorizontal: 24, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', zIndex: 10 },
-  syncBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#111', justifyContent: 'center', alignItems: 'center', borderWeight: 1, borderColor: '#222' },
-  radarContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  radarCircle: {
-     width: SCREEN_WIDTH * 1.5,
-     height: SCREEN_WIDTH * 1.5,
-     borderRadius: SCREEN_WIDTH * 0.75,
-     borderWidth: 1,
-     borderColor: '#111',
-     backgroundColor: '#080808',
-     overflow: 'hidden',
-  },
-  gridV: { position: 'absolute', width: 2, height: '100%', left: '50%', backgroundColor: '#151515' },
-  gridH: { position: 'absolute', height: 2, width: '100%', top: '50%', backgroundColor: '#151515' },
-  node: { position: 'absolute', width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
-  nodePulse: { position: 'absolute', width: 20, height: 20, borderRadius: 10 },
-  nodeCore: { width: 8, height: 8, borderRadius: 4, zIndex: 2 },
-  dataSheet: { paddingHorizontal: 20, gap: 16 },
-  infoCard: { padding: 24, borderRadius: 32 },
-  infoTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
-  growthBadge: { backgroundColor: `${theme.colors.primary}15`, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
-  metricsRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  metric: { flex: 1, gap: 4 },
-  metricDivider: { width: 1, height: 30, backgroundColor: '#333' },
-  quickSelect: { marginTop: 12 },
-  nodeSelect: { paddingHorizontal: 20, paddingVertical: 12, borderRadius: 12, marginRight: 8, backgroundColor: '#111' },
-  nodeSelectActive: { backgroundColor: `${theme.colors.primary}20`, borderWidth: 1, borderColor: theme.colors.primary },
+  container: { flex: 1, backgroundColor: '#FFFFFF' },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, marginBottom: 20 },
+  layerBtn: { width: 44, height: 44, borderRadius: 14, backgroundColor: '#F3F4F6', alignItems: 'center', justifyContent: 'center' },
+  mapShell: { flex: 1, marginHorizontal: 16, borderRadius: 40, backgroundColor: '#F9FAFB', overflow: 'hidden', borderWidth: 1, borderColor: '#F1F5F9' },
+  navBar: { position: 'absolute', top: 20, left: 0, right: 0, alignItems: 'center' },
+  navBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: theme.colors.primary, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 30, elevation: 10 },
+  controlSheet: { paddingHorizontal: 24, marginTop: 20 },
 });

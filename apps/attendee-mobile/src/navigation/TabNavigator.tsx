@@ -1,114 +1,75 @@
-/**
- * Complete Working Tab Navigator
- * All screens properly connected and functional
- */
-
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, @typescript-eslint/no-require-imports, @typescript-eslint/ban-ts-comment */
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { theme } from '@crowza/design-system';
+import { Platform } from 'react-native';
 
 // Import all screens
-import AdvancedHomeScreen from '../screens/AdvancedHomeScreen';
-import EventDashboardScreen from '../screens/EventDashboardScreen';
-import QueuePredictionScreen from '../screens/QueuePredictionScreen';
-import HeatMapScreen from '../screens/HeatMapScreen';
+import HomeScreen from '../screens/HomeScreen';
+import BookingsScreen from '../screens/BookingsScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 
 const Tab = createBottomTabNavigator();
 
-/**
- * Complete Attendee Tab Navigator
- * All buttons work, all screens are functional
- */
 export default function AttendeeTabNavigator() {
   return (
     <Tab.Navigator
-      screenOptions={({ route }) => ({
-        headerShown: true,
-        headerStyle: {
-          backgroundColor: theme.colors.surface,
-          borderBottomWidth: 1,
-          borderBottomColor: theme.colors.outlineVariant,
-        },
-        headerTitleStyle: {
-          fontWeight: '700',
-          color: theme.colors.onSurface,
-        },
+      screenOptions={{
+        headerShown: false,
         tabBarStyle: {
-          backgroundColor: theme.colors.surface,
+          backgroundColor: theme.colors.background,
           borderTopWidth: 1,
-          borderTopColor: theme.colors.outlineVariant,
-          paddingBottom: 6,
-          paddingTop: 6,
-          height: 60,
+          borderTopColor: '#F3EDEC',
+          height: Platform.OS === 'ios' ? 92 : 72,
+          paddingBottom: Platform.OS === 'ios' ? 32 : 12,
+          paddingTop: 12,
+          elevation: 8,
+          shadowColor: theme.colors.outline,
+          shadowOffset: { width: 0, height: -4 },
+          shadowOpacity: 0.05,
+          shadowRadius: 12,
         },
         tabBarActiveTintColor: theme.colors.primary,
         tabBarInactiveTintColor: theme.colors.outline,
         tabBarLabelStyle: {
           fontSize: 11,
-          fontWeight: '600',
+          fontWeight: '800',
+          fontFamily: 'Plus Jakarta Sans',
           marginTop: 4,
         },
-      })}
+      }}
     >
-      {/* Home Screen - Advanced Navigation */}
       <Tab.Screen
         name="Home"
-        component={AdvancedHomeScreen}
+        component={HomeScreen}
         options={{
-          title: '🎯 Navigator',
-          tabBarLabel: 'Navigate',
-          tabBarIcon: ({ color, size }) => <Ionicons name="compass" size={size} color={color} />,
-          headerTitle: '🎯 Smart Navigation',
+          tabBarLabel: 'HOME',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'home' : 'home-outline'} size={24} color={color} />
+          ),
         }}
       />
 
-      {/* Events Screen */}
       <Tab.Screen
         name="Events"
-        component={EventDashboardScreen}
+        component={BookingsScreen}
         options={{
-          title: '📅 Events',
-          tabBarLabel: 'Events',
-          tabBarIcon: ({ color, size }) => <Ionicons name="calendar" size={size} color={color} />,
-          headerTitle: '📅 Available Events',
+          tabBarLabel: 'EVENTS',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'calendar' : 'calendar-outline'} size={24} color={color} />
+          ),
         }}
       />
 
-      {/* Queue Prediction Screen */}
-      <Tab.Screen
-        name="Queues"
-        component={QueuePredictionScreen}
-        options={{
-          title: '⏱️ Queues',
-          tabBarLabel: 'Queues',
-          tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="timer-sand" size={size} color={color} />,
-          headerTitle: '⏱️ Queue Predictions',
-        }}
-      />
-
-      {/* Crowd Heatmap */}
-      <Tab.Screen
-        name="Crowd"
-        component={HeatMapScreen}
-        options={{
-          title: '📊 Crowd Map',
-          tabBarLabel: 'Crowd',
-          tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="heatmap" size={size} color={color} />,
-          headerTitle: '📊 Crowd Heatmap',
-        }}
-      />
-
-      {/* Profile Screen */}
       <Tab.Screen
         name="Profile"
         component={ProfileScreen}
         options={{
-          title: '👤 Profile',
-          tabBarLabel: 'Profile',
-          tabBarIcon: ({ color, size }) => <Ionicons name="person" size={size} color={color} />,
-          headerTitle: '👤 My Profile',
+          tabBarLabel: 'PROFILE',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'person' : 'person-outline'} size={24} color={color} />
+          ),
         }}
       />
     </Tab.Navigator>

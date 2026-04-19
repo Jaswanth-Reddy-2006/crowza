@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, @typescript-eslint/no-require-imports, @typescript-eslint/ban-ts-comment */
 /**
  * Conceptual parser for event organizer indoor map files.
  * This handles various formats (GeoJSON, AutoCAD-JSON, etc.) and transforms them into 

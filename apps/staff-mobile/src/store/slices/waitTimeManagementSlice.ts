@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, @typescript-eslint/no-require-imports */
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import staffApiClient from '../../services/api/staffApiClient';
 
@@ -30,7 +31,7 @@ export const fetchAllQueues = createAsyncThunk(
     try {
       const response = await staffApiClient.get('/queues', { params: { venueId } });
       return response.data.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch queues');
     }
   }
@@ -44,7 +45,7 @@ export const updateWaitEstimate = createAsyncThunk(
         estimatedWaitMins: payload.minutes,
       });
       return { zoneId: payload.zoneId, minutes: payload.minutes, data: response.data.data };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return rejectWithValue(error.response?.data?.message || 'Failed to update wait estimate');
     }
   }

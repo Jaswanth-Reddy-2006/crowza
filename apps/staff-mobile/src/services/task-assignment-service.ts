@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, @typescript-eslint/no-require-imports */
 /**
  * Channel-Based Task Assignment System - Client side service
  * For coordinating staff across venue departments

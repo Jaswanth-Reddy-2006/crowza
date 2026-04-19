@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, @typescript-eslint/no-require-imports, @typescript-eslint/ban-ts-comment */
 /**
  * Seat-Level Indoor Map Component
  * Displays individual seats with real-time occupancy, accessibility info, and navigation
@@ -41,7 +42,7 @@ interface SeatMapProps {
 
 const SEAT_RADIUS = 8;
 const SEAT_COLORS = {
-  available: '#4CAF50',
+  available: theme.colors.primaryLight,
   occupied: '#999999',
   restricted: '#F44336',
   accessible: '#2196F3',

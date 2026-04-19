@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, @typescript-eslint/no-require-imports, @typescript-eslint/ban-ts-comment */
 import { store } from '../../store/store';
 import { loginWithEmail, logout } from '../../store/slices/authSlice';
 import { tokenManager } from './tokenManager';

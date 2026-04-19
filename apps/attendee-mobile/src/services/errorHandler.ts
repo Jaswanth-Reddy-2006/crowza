@@ -1,3 +1,15 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-require-imports, @typescript-eslint/ban-ts-comment */
+
+interface APIError {
+  response?: {
+    status?: number;
+    data?: {
+      message?: string;
+    };
+  };
+  message?: string;
+}
+
 const MAX_RETRIES = 3;
 const BASE_DELAY_MS = 1000;
 
@@ -6,6 +18,10 @@ export type RetryableError = {
   message: string;
 };
 
+function isApiError(err: unknown): err is APIError {
+  return typeof err === 'object' && err !== null;
+}
+
 export async function withRetry<T>(
   fn: () => Promise<T>,
   attempt = 0
@@ -13,8 +29,7 @@ export async function withRetry<T>(
   try {
     return await fn();
   } catch (error: unknown) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const statusCode = (error as any)?.response?.status; 
+    const statusCode = isApiError(error) ? error.response?.status : undefined;
 
     // Do not retry 4xx client errors (except 429 rate limit)
     if (statusCode && statusCode >= 400 && statusCode < 500 && statusCode !== 429) {
@@ -32,10 +47,10 @@ export async function withRetry<T>(
 }
 
 export function mapErrorToMessage(error: unknown): string {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const anyError = error as any;
-  const statusCode = anyError?.response?.status;
-  const serverMessage = anyError?.response?.data?.message;
+  if (!isApiError(error)) return 'An unexpected error occurred.';
+
+  const statusCode = error.response?.status;
+  const serverMessage = error.response?.data?.message;
 
   if (serverMessage) return serverMessage;
 
@@ -51,3 +66,4 @@ export function mapErrorToMessage(error: unknown): string {
       return 'An unexpected error occurred.';
   }
 }
+

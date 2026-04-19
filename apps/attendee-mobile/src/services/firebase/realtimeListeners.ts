@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, @typescript-eslint/no-require-imports, @typescript-eslint/ban-ts-comment */
 import { doc, onSnapshot, collection } from 'firebase/firestore';
 import { db } from './config'; // Assuming firebase config is exported from here
 import { setZoneOccupancy, setHeatmap } from '../../store/slices/occupancySlice';
@@ -15,6 +16,8 @@ export const setupOccupancyListener = (venueId: string, dispatch: AppDispatch) =
         dispatch(setZoneOccupancy(data));
       }
     });
+  }, (error) => {
+    console.warn('Occupancy listener permission denied or failed:', error.message);
   });
 };
 
@@ -31,6 +34,8 @@ export const setupWaitTimeListener = (venueId: string, dispatch: AppDispatch) =>
         }));
       }
     });
+  }, (error) => {
+    console.warn('WaitTime listener permission denied or failed:', error.message);
   });
 };
 
@@ -42,5 +47,7 @@ export const setupHeatmapListener = (venueId: string, dispatch: AppDispatch) => 
       const data = snapshot.data() as HeatMapData;
       dispatch(setHeatmap(data));
     }
+  }, (error) => {
+    console.warn('Heatmap listener permission denied or failed:', error.message);
   });
 };

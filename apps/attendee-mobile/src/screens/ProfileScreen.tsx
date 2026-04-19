@@ -1,96 +1,122 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, @typescript-eslint/no-require-imports, @typescript-eslint/ban-ts-comment */
 import React from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Image, Alert } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Image, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { theme, Typography } from '@crowza/design-system';
-import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import { theme, Typography, EditorialHeader, TonalCard, SignatureButton } from '@crowza/design-system';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppDispatch } from '../utils/hooks';
 import { logout } from '../store/slices/authSlice';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
+  const navigation = useNavigation<any>();
 
   const handleLogout = () => {
     dispatch(logout());
   };
 
   const MENUS = [
-    { icon: 'person-outline', title: 'Personal Information' },
-    { icon: 'card-outline', title: 'Payment Methods' },
-    { icon: 'notifications-outline', title: 'Notifications' },
-    { icon: 'shield-checkmark-outline', title: 'Security & Privacy' },
-    { icon: 'help-circle-outline', title: 'Help & Support' },
+    { icon: 'account-circle-outline', title: 'Personal Info', detail: 'Contact & ID details', screen: 'PersonalInfo' },
+    { icon: 'credit-card-outline', title: 'Payment Methods', detail: 'Manage wallet & cards', screen: 'PaymentMethods' },
+    { icon: 'bell-ring-outline', title: 'Notifications', detail: 'Alert preferences', screen: 'NotificationSettings' },
+    { icon: 'shield-lock-outline', title: 'Security', detail: 'FaceID & Biometrics', screen: 'SecurityPrivacy' },
+    { icon: 'help-circle-outline', title: 'Support', detail: '24/7 Concierge', screen: 'HelpSupport' },
   ];
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <View style={styles.header}>
-        <Typography variant="headlineMedium" weight="700" color={theme.colors.onSurface}>
-          Profile
-        </Typography>
-      </View>
-
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         
-        <View style={styles.profileSection}>
-          <Image 
-            source={{ uri: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80' }} 
-            style={styles.avatar} 
-          />
-          <View style={styles.profileInfo}>
-            <Typography variant="titleLarge" weight="700" color={theme.colors.onSurface}>
-              Alex Johnson
-            </Typography>
-            <Typography variant="bodyMedium" color={theme.colors.outline}>
-              alex.johnson@example.com
-            </Typography>
-          </View>
-          <TouchableOpacity style={styles.editBtn}>
-            <Ionicons name="pencil" size={18} color={theme.colors.onPrimary} />
-          </TouchableOpacity>
+        {/* Editorial Header */}
+        <View style={styles.header}>
+           <EditorialHeader
+             metadata="MEMBER STATUS"
+             title="Alex Johnson"
+             subtitle="Crowza Elite Member since 2024"
+           />
         </View>
 
-        <View style={styles.statsRow}>
-          <View style={styles.statBox}>
-            <Typography variant="titleLarge" weight="700" color={theme.colors.primary}>1</Typography>
-            <Typography variant="labelSmall" color={theme.colors.outline}>UPCOMING</Typography>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statBox}>
-            <Typography variant="titleLarge" weight="700" color={theme.colors.onSurface}>14</Typography>
-            <Typography variant="labelSmall" color={theme.colors.outline}>ATTENDED</Typography>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statBox}>
-            <Typography variant="titleLarge" weight="700" color={theme.colors.onSurface}>2.4k</Typography>
-            <Typography variant="labelSmall" color={theme.colors.outline}>POINTS</Typography>
-          </View>
-        </View>
-
-        <View style={styles.menuList}>
-          {MENUS.map((menu, idx) => (
-            <TouchableOpacity 
-              key={idx} 
-              style={styles.menuItem}
-              onPress={() => Alert.alert(menu.title, 'This section is under maintenance.')}
-            >
-              <View style={styles.menuIconContainer}>
-                <Ionicons name={menu.icon as any} size={22} color={theme.colors.onSurface} />
+        {/* Hero Membership Card */}
+        <View style={styles.heroContainer}>
+           <TonalCard variant="high" style={styles.membershipCard} dark>
+              <LinearGradient
+                colors={[theme.colors.primaryDark, theme.colors.primary]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={StyleSheet.absoluteFill}
+              />
+              <View style={styles.cardTop}>
+                 <Typography variant="labelSmall" color="rgba(255,255,255,0.6)" weight="900">ELITE TIER</Typography>
+                 <MaterialCommunityIcons name="integrated-circuit-chip" size={32} color="rgba(255,255,255,0.4)" />
               </View>
-              <Typography variant="titleMedium" color={theme.colors.onSurface} style={styles.menuTitle}>
-                {menu.title}
-              </Typography>
-              <Ionicons name="chevron-forward" size={20} color={theme.colors.outline} />
-            </TouchableOpacity>
-          ))}
+              <View style={styles.cardBottom}>
+                 <View>
+                    <Typography variant="titleLarge" color="white" weight="900">2,480 Pts</Typography>
+                    <Typography variant="bodySmall" color="rgba(255,255,255,0.6)">STADIUM REWARDS</Typography>
+                 </View>
+                 <View style={styles.avatarGlow}>
+                    <Image 
+                      source={{ uri: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80' }} 
+                      style={styles.avatar} 
+                    />
+                 </View>
+              </View>
+           </TonalCard>
+        </View>
+
+        {/* Quick Stats Grid */}
+        <View style={styles.statsGrid}>
+           <TonalCard variant="low" style={styles.statBox}>
+              <Typography variant="headlineSmall" weight="900" color={theme.colors.primary}>12</Typography>
+              <Typography variant="labelSmall" color={theme.colors.outline} weight="800">EVENTS</Typography>
+           </TonalCard>
+           <TonalCard variant="low" style={styles.statBox}>
+              <Typography variant="headlineSmall" weight="900" color={theme.colors.onSurface}>0</Typography>
+              <Typography variant="labelSmall" color={theme.colors.outline} weight="800">UNPAID</Typography>
+           </TonalCard>
+           <TonalCard variant="low" style={styles.statBox}>
+              <Typography variant="headlineSmall" weight="900" color={theme.colors.tertiary}>04</Typography>
+              <Typography variant="labelSmall" color={theme.colors.outline} weight="800">OFFERS</Typography>
+           </TonalCard>
+        </View>
+
+        {/* Actionable Menu */}
+        <View style={styles.menuSection}>
+           <Typography variant="labelSmall" color={theme.colors.outline} weight="900" style={styles.sectionTitle}>
+              ACCOUNT PREFERENCES
+           </Typography>
+           {MENUS.map((menu, idx) => (
+             <TouchableOpacity 
+               key={idx} 
+               style={styles.menuItem}
+               activeOpacity={0.7}
+               onPress={() => navigation.navigate(menu.screen)}
+             >
+                <View style={styles.menuIconBox}>
+                   <MaterialCommunityIcons name={menu.icon as any} size={24} color={theme.colors.primary} />
+                </View>
+                <View style={{ flex: 1, marginLeft: 16 }}>
+                   <Typography variant="titleMedium" weight="700">{menu.title}</Typography>
+                   <Typography variant="bodySmall" color={theme.colors.outline}>{menu.detail}</Typography>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color={theme.colors.outlineVariant} />
+             </TouchableOpacity>
+           ))}
         </View>
 
         <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-          <Ionicons name="log-out-outline" size={22} color={theme.colors.error} />
-          <Typography variant="titleMedium" weight="700" color={theme.colors.error} style={{ marginLeft: 12 }}>
-            Log Out
-          </Typography>
+           <Ionicons name="log-out" size={20} color={theme.colors.error} />
+           <Typography variant="labelLarge" color={theme.colors.error} weight="900" style={{ marginLeft: 12 }}>
+              SECURE LOGOUT
+           </Typography>
         </TouchableOpacity>
+
+        <View style={styles.footer}>
+           <Typography variant="labelSmall" color={theme.colors.outlineVariant}>APP v2.4.0 (2026.04.18)</Typography>
+        </View>
 
       </ScrollView>
     </View>
@@ -100,88 +126,105 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.bgPrimary,
   },
   header: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.surfaceVariant,
+    paddingHorizontal: 24,
+    marginTop: 20,
   },
   scrollContent: {
     paddingBottom: 40,
   },
-  profileSection: {
+  heroContainer: {
+    paddingHorizontal: 24,
+    marginTop: 24,
+  },
+  membershipCard: {
+    height: 180,
+    borderRadius: 32,
+    overflow: 'hidden',
+    padding: 24,
+    justifyContent: 'space-between',
+    elevation: 8,
+    shadowColor: theme.colors.primary,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+  },
+  cardTop: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
-    marginTop: 10,
+  },
+  cardBottom: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+  },
+  avatarGlow: {
+    padding: 3,
+    borderRadius: 30,
+    backgroundColor: 'rgba(255,255,255,0.2)',
   },
   avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: theme.colors.surfaceVariant,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    borderWidth: 2,
+    borderColor: 'white',
   },
-  profileInfo: {
-    flex: 1,
-    marginLeft: 16,
-  },
-  editBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: theme.colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  statsRow: {
+  statsGrid: {
     flexDirection: 'row',
-    marginHorizontal: 20,
-    backgroundColor: theme.colors.surfaceContainer,
-    borderRadius: 20,
-    paddingVertical: 20,
-    marginTop: 10,
-    marginBottom: 30,
+    paddingHorizontal: 24,
+    marginTop: 24,
+    gap: 12,
   },
   statBox: {
     flex: 1,
+    padding: 16,
+    borderRadius: 20,
     alignItems: 'center',
+    gap: 4,
   },
-  statDivider: {
-    width: 1,
-    backgroundColor: theme.colors.outlineVariant,
+  menuSection: {
+    paddingHorizontal: 24,
+    marginTop: 40,
   },
-  menuList: {
-    paddingHorizontal: 20,
+  sectionTitle: {
+    letterSpacing: 1.5,
+    marginBottom: 16,
+    marginLeft: 4,
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
+    paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: theme.colors.surfaceContainerHigh,
+    borderBottomColor: theme.colors.surfaceVariant,
   },
-  menuIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: theme.colors.surfaceContainer,
-    justifyContent: 'center',
+  menuIconBox: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    backgroundColor: theme.colors.primary + '10',
     alignItems: 'center',
-  },
-  menuTitle: {
-    flex: 1,
-    marginLeft: 16,
+    justifyContent: 'center',
   },
   logoutBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginHorizontal: 20,
+    marginHorizontal: 24,
     marginTop: 40,
-    paddingVertical: 16,
-    borderRadius: 16,
-    backgroundColor: '#FFEBEB',
+    paddingVertical: 18,
+    borderRadius: 20,
+    backgroundColor: theme.colors.error + '08',
+    borderWidth: 1,
+    borderColor: theme.colors.error + '20',
+  },
+  footer: {
+    alignItems: 'center',
+    marginTop: 32,
+    paddingBottom: 20,
   }
 });

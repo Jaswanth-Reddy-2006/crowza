@@ -10,6 +10,7 @@ interface SignatureButtonProps {
   size?: 'small' | 'medium' | 'large';
   style?: ViewStyle;
   disabled?: boolean;
+  icon?: string;
 }
 
 export const SignatureButton: React.FC<SignatureButtonProps> = ({
@@ -19,6 +20,7 @@ export const SignatureButton: React.FC<SignatureButtonProps> = ({
   size = 'medium',
   style,
   disabled = false,
+  icon,
 }) => {
   const height = size === 'small' ? 40 : size === 'large' ? 64 : 56;
   const containerStyle: any[] = [styles.container, { height }, style];

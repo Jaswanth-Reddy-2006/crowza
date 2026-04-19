@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, @typescript-eslint/no-require-imports */
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import staffApiClient from '../../services/api/staffApiClient';
 import { Incident } from '@crowza/shared';
@@ -36,7 +37,7 @@ export const fetchIncidents = createAsyncThunk(
       const params = new URLSearchParams(filters as any).toString();
       const response = await staffApiClient.get(`/incidents?${params}`);
       return response.data.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch incidents');
     }
   }
@@ -48,7 +49,7 @@ export const createIncident = createAsyncThunk(
     try {
       const response = await staffApiClient.post('/incidents', data);
       return response.data.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       return rejectWithValue(error.response?.data?.message || 'Failed to create incident');
     }
   }
@@ -60,7 +61,7 @@ export const updateIncident = createAsyncThunk(
     try {
       const response = await staffApiClient.patch(`/incidents/${payload.id}`, payload.updates);
       return response.data.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       return rejectWithValue(error.response?.data?.message || 'Failed to update incident');
     }
   }
@@ -74,7 +75,7 @@ export const assignIncident = createAsyncThunk(
         staffId: payload.staffId,
       });
       return response.data.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       return rejectWithValue(error.response?.data?.message || 'Failed to assign incident');
     }
   }

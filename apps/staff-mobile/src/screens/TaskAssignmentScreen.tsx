@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, @typescript-eslint/no-require-imports */
 /**
  * Task Assignment Screen - Staff Mobile App
  * Real-time task management and channel coordination

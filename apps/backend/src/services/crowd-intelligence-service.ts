@@ -309,7 +309,7 @@ export class CrowdIntelligenceService {
       .filter((z) => z.trendRate > 5)
       .map((z) => ({
         zoneId: z.zoneId,
-        severity: z.trendRate > 10 ? 'high' : 'medium' as const,
+        severity: (z.trendRate > 10 ? 'high' : 'medium') as 'high' | 'medium' | 'low',
       }));
 
     const totalAttendees = zones.reduce((sum, z) => sum + z.currentOccupancy, 0);

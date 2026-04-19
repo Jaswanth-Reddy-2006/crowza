@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import { errorHandler } from './middleware/errorHandler';
+import organizerRoutes from './routes/organizerRoutes';
 
 const app = express();
 
@@ -99,6 +100,9 @@ app.get('/analytics/wait-times', (req: Request, res: Response) => {
     }
   });
 });
+
+// ===== ORGANIZER & EVENT ROUTES =====
+app.use('/organizers', organizerRoutes);
 
 app.use(errorHandler);
 

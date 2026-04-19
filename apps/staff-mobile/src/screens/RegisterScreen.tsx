@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, @typescript-eslint/no-require-imports */
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -13,7 +14,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { theme, TonalCard, Typography, SignatureButton } from '@crowza/design-system';
+import { theme, TonalCard, Typography, SignatureButton, EditorialHeader } from '@crowza/design-system';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppDispatch, useAppSelector } from '../utils/hooks';
 import { registerStaff, clearError } from '../store/slices/staffAuthSlice';
@@ -55,58 +56,67 @@ export default function RegisterScreen() {
 
   return (
     <ImageBackground 
-      source={require('../../assets/branding/stadium_snow_v2.png')}
+      source={require('../../assets/branding/stadium_light.png')}
       style={styles.background}
     >
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <View style={[styles.overlay, { paddingTop: insets.top }]}>
-          <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+          <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
             <TouchableOpacity 
               style={styles.backButton} 
               onPress={() => navigation.goBack()}
             >
-              <Ionicons name="chevron-back" size={28} color="#FFF" />
+              <Ionicons name="chevron-back" size={28} color={theme.colors.onSurface} />
             </TouchableOpacity>
 
             <View style={styles.header}>
-              <View style={styles.brandingRow}>
-                <Image source={require('../../assets/branding/crowza_neon.png')} style={styles.miniLogo} />
-                <Typography variant="headlineMedium" weight="900" style={styles.logoText}>CROWZA</Typography>
-              </View>
-              <Typography variant="titleLarge" weight="800" color="#FFF" style={{ marginTop: 24 }}>Generate Identity</Typography>
-              <Typography variant="labelSmall" color={theme.colors.primary} style={styles.protocolText}>PROTOCOL: ALPHA-9-SECURE</Typography>
+              <Image source={require('../../assets/branding/crowza_logo.png')} style={styles.miniLogo} />
+              <EditorialHeader 
+                metadata="STAFF ONBOARDING"
+                title="Join our Elite Team"
+                subtitle="Create your professional account and start your journey with Crowza."
+              />
             </View>
 
             <View style={styles.formWrapper}>
               <TonalCard variant="highest" style={styles.formCard}>
-                <Typography variant="labelSmall" color={theme.colors.primary} style={styles.label}>FULL NAME</Typography>
+                <View style={styles.inputLabelRow}>
+                   <Ionicons name="person-outline" size={14} color={theme.colors.primary} />
+                   <Typography variant="labelSmall" color={theme.colors.primary} style={styles.label}>FULL NAME</Typography>
+                </View>
                 <TextInput
                   style={styles.input}
                   value={name}
                   onChangeText={setName}
-                  placeholder="Operational Handle"
-                  placeholderTextColor="rgba(255,255,255,0.4)"
+                  placeholder="Your Full Name"
+                  placeholderTextColor={theme.colors.outline}
                 />
 
-                <Typography variant="labelSmall" color={theme.colors.primary} style={[styles.label, { marginTop: 20 }]}>STAFF EMAIL</Typography>
+                <View style={[styles.inputLabelRow, { marginTop: 24 }]}>
+                   <Ionicons name="mail-outline" size={14} color={theme.colors.primary} />
+                   <Typography variant="labelSmall" color={theme.colors.primary} style={styles.label}>STAFF EMAIL</Typography>
+                </View>
                 <TextInput
                   style={styles.input}
                   value={email}
                   onChangeText={setEmail}
-                  placeholder="commander@crowza.com"
-                  placeholderTextColor="rgba(255,255,255,0.4)"
+                  placeholder="name@crowza.com"
+                  placeholderTextColor={theme.colors.outline}
                   keyboardType="email-address"
                   autoCapitalize="none"
                 />
 
-                <Typography variant="labelSmall" color={theme.colors.primary} style={[styles.label, { marginTop: 20 }]}>SECURE ACCESS CODE</Typography>
+                <View style={[styles.inputLabelRow, { marginTop: 24 }]}>
+                   <Ionicons name="lock-closed-outline" size={14} color={theme.colors.primary} />
+                   <Typography variant="labelSmall" color={theme.colors.primary} style={styles.label}>SECURE PASSWORD</Typography>
+                </View>
                 <View style={styles.passwordContainer}>
                   <TextInput
                     style={styles.passwordInput}
                     value={password}
                     onChangeText={setPassword}
                     placeholder="••••••••"
-                    placeholderTextColor="rgba(255,255,255,0.4)"
+                    placeholderTextColor={theme.colors.outline}
                     secureTextEntry={!showPassword}
                   />
                   <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
@@ -115,17 +125,17 @@ export default function RegisterScreen() {
                 </View>
 
                 <View style={styles.checklistContainer}>
-                   <Typography variant="labelSmall" color="rgba(255,255,255,0.5)" style={{ marginBottom: 12, letterSpacing: 1 }}>MANDATORY REQUIREMENTS</Typography>
+                   <Typography variant="labelSmall" color={theme.colors.outline} style={{ marginBottom: 12, letterSpacing: 1 }}>SECURITY REQUIREMENTS</Typography>
                    {requirements.map((req, i) => (
                      <View key={i} style={styles.checkItem}>
                         <Ionicons 
                           name={req.met ? "checkmark-circle" : "ellipse-outline"} 
                           size={16} 
-                          color={req.met ? theme.colors.primary : "rgba(255,255,255,0.2)"} 
+                          color={req.met ? theme.colors.primary : theme.colors.outlineVariant} 
                         />
                         <Typography 
                           variant="bodySmall" 
-                          color={req.met ? "#FFF" : "rgba(255,255,255,0.4)"}
+                          color={req.met ? theme.colors.onSurface : theme.colors.outline}
                           style={{ marginLeft: 8 }}
                         >
                           {req.label}
@@ -139,7 +149,7 @@ export default function RegisterScreen() {
             {error && (
               <View style={styles.errorBox}>
                  <Ionicons name="alert-circle" size={16} color={theme.colors.error} />
-                 <Typography variant="bodySmall" color={theme.colors.error}>Conflict: {error}</Typography>
+                 <Typography variant="bodySmall" color={theme.colors.error} weight="700">Conflict: {error}</Typography>
               </View>
             )}
 
@@ -148,7 +158,7 @@ export default function RegisterScreen() {
             ) : (
               <View style={styles.actionSection}>
                 <SignatureButton 
-                  label="INITIALIZE ASSIGNMENT" 
+                  label="CREATE ACCOUNT" 
                   onPress={handleRegister} 
                   variant="primary" 
                   disabled={!allRequirementsMet}
@@ -157,8 +167,8 @@ export default function RegisterScreen() {
             )}
             
             <View style={styles.footer}>
-               <Typography variant="bodySmall" color="rgba(255,255,255,0.3)" style={{ textAlign: 'center' }}>
-                  By initializing, you agree to the Crowza Operational protocols.
+               <Typography variant="bodySmall" color={theme.colors.outline} style={{ textAlign: 'center' }}>
+                  By signing up, you agree to our professional service standards.
                </Typography>
             </View>
           </ScrollView>
@@ -169,55 +179,54 @@ export default function RegisterScreen() {
 }
 
 const styles = StyleSheet.create({
-  background: { flex: 1, backgroundColor: '#000' },
-  overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)' },
-  scrollContent: { padding: 32, paddingBottom: 60 },
+  background: { flex: 1, backgroundColor: theme.colors.bgPrimary },
+  overlay: { flex: 1, backgroundColor: 'rgba(252, 249, 248, 0.8)' },
+  scrollContent: { paddingHorizontal: 24, paddingBottom: 60 },
   backButton: { marginBottom: 16, width: 44, height: 44, justifyContent: 'center', marginLeft: -8 },
-  header: { marginBottom: 32 },
-  brandingRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  miniLogo: { width: 44, height: 44, borderRadius: 12, borderWidth: 1, borderColor: 'rgba(255,152,0,0.3)' },
-  logoText: { letterSpacing: 6, color: '#FFF' },
-  protocolText: { marginTop: 4, letterSpacing: 2, opacity: 0.8 },
+  header: { marginBottom: 32, alignItems: 'flex-start' },
+  miniLogo: { width: 60, height: 60, borderRadius: 16, marginBottom: 20 },
   formWrapper: { alignItems: 'center' },
   formCard: { 
     width: '100%',
     maxWidth: 400,
     padding: 24, 
-    borderRadius: 32, 
-    backgroundColor: 'rgba(25,25,25,0.85)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 28, 
+    backgroundColor: theme.colors.surface,
+    ...theme.elevation.high,
   },
-  label: { marginBottom: 8, letterSpacing: 1.5, fontWeight: '800', fontSize: 10 },
+  inputLabelRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8, gap: 6 },
+  label: { letterSpacing: 1, fontWeight: '800', fontSize: 11 },
   input: {
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    borderRadius: 12,
+    backgroundColor: theme.colors.surfaceVariant,
+    borderRadius: 16,
     padding: 16,
-    color: '#FFF',
+    color: theme.colors.onSurface,
     fontSize: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
+    borderColor: theme.colors.outlineVariant,
   },
   passwordContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    borderRadius: 12,
+    backgroundColor: theme.colors.surfaceVariant,
+    borderRadius: 16,
     paddingRight: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
+    borderColor: theme.colors.outlineVariant,
   },
   passwordInput: {
     flex: 1,
     padding: 16,
-    color: '#FFF',
+    color: theme.colors.onSurface,
     fontSize: 16,
   },
   checklistContainer: {
     marginTop: 24,
-    backgroundColor: 'rgba(0,0,0,0.2)',
+    backgroundColor: theme.colors.background,
     padding: 16,
     borderRadius: 16,
+    borderWidth: 1,
+    borderColor: theme.colors.surfaceVariant,
   },
   checkItem: {
     flexDirection: 'row',
@@ -226,16 +235,16 @@ const styles = StyleSheet.create({
   },
   errorBox: { 
     marginTop: 24, 
-    padding: 12, 
-    backgroundColor: `${theme.colors.error}15`, 
-    borderRadius: 12,
+    padding: 16, 
+    backgroundColor: `${theme.colors.error}10`, 
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: `${theme.colors.error}30`,
+    borderColor: `${theme.colors.error}20`,
     alignSelf: 'center',
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
   },
   actionSection: { marginTop: 32, width: '100%', maxWidth: 400, alignSelf: 'center' },
-  footer: { marginTop: 40, opacity: 0.6 },
+  footer: { marginTop: 40, opacity: 0.8 },
 });

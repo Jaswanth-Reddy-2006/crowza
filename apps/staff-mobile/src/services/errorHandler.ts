@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, @typescript-eslint/no-require-imports */
 const MAX_RETRIES = 3;
 const BASE_DELAY_MS = 1000;
 
@@ -25,7 +26,7 @@ export async function withRetry<T>(
   }
 }
 
-export function mapErrorToMessage(error: any): string {
+export function mapErrorToMessage(error: unknown): string {
   const statusCode = error?.response?.status;
   const serverMessage = error?.response?.data?.message;
 

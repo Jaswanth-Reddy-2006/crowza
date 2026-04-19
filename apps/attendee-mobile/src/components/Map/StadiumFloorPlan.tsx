@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, @typescript-eslint/no-require-imports, @typescript-eslint/ban-ts-comment */
 import React from 'react';
 import { Platform } from 'react-native';
 import Svg, { Path, G, Text as SvgText, Rect, Circle } from 'react-native-svg';
@@ -13,7 +14,7 @@ interface StadiumFloorPlanProps {
 }
 
 const SECTION_COLORS: Record<string, string> = {
-  stand: '#E8F5E9',      // Lighter green
+  stand: '#FFF7ED',      // Peach/Orange variant
   premium: '#FFF8E1',    // Light amber/gold
   amenity: '#E1F5FE',    // Light blue
   corridor: '#F5F5F5',   // Light gray
@@ -22,7 +23,7 @@ const SECTION_COLORS: Record<string, string> = {
 };
 
 const STROKE_COLORS: Record<string, string> = {
-  stand: '#81C784',
+  stand: '#F98000',
   premium: '#FFD54F',
   amenity: '#4FC3F7',
   corridor: '#BDBDBD',
@@ -47,7 +48,7 @@ export default function StadiumFloorPlan({
   return (
     <Svg width="1000" height="1000" viewBox="0 0 1000 1000">
       {/* Background / Pitch */}
-      <Rect x="200" y="300" width="600" height="400" fill="#C8E6C9" rx="50" />
+      <Rect x="200" y="300" width="600" height="400" fill="#FFF7ED" rx="50" />
       <Rect x="250" y="350" width="500" height="300" fill="transparent" stroke="white" strokeWidth="2" rx="40" />
       <Circle cx="500" cy="500" r="50" stroke="white" strokeWidth="2" fill="transparent" />
 
@@ -95,37 +96,71 @@ export default function StadiumFloorPlan({
         );
       })}
 
-      {/* Static Sample Elements for "Wowed" look */}
-      <G opacity="0.4">
-        <Circle cx="150" cy="150" r="40" fill={SECTION_COLORS.amenity} />
-        <SvgText x="135" y="155" fill="black" fontSize="12">Food</SvgText>
+      {/* Static Sample Elements for "Wowed" look - High Fidelity POIs */}
+      <G>
+        {/* Food Court */}
+        <G opacity="0.9">
+          <Circle cx="150" cy="150" r="30" fill="#E1F5FE" stroke="#4FC3F7" strokeWidth="1" />
+          <SvgText x="135" y="155" fill="#0277BD" fontSize="14" fontWeight="bold">🍴</SvgText>
+          <SvgText x="110" y="195" fill="#0277BD" fontSize="10" fontWeight="bold">FOOD COURT</SvgText>
+        </G>
         
-        <Circle cx="850" cy="150" r="40" fill={SECTION_COLORS.amenity} />
-        <SvgText x="835" y="155" fill="black" fontSize="12">Rest</SvgText>
+        {/* Restrooms */}
+        <G opacity="0.9">
+          <Circle cx="850" cy="150" r="30" fill="#F3E5F5" stroke="#BA68C8" strokeWidth="1" />
+          <SvgText x="835" y="155" fill="#7B1FA2" fontSize="14" fontWeight="bold">🚻</SvgText>
+          <SvgText x="815" y="195" fill="#7B1FA2" fontSize="10" fontWeight="bold">WASHROOMS</SvgText>
+        </G>
+
+        {/* Info Desk */}
+        <G opacity="0.9">
+          <Circle cx="500" cy="850" r="30" fill="#FFF3E0" stroke="#FFB74D" strokeWidth="1" />
+          <SvgText x="488" y="855" fill="#E65100" fontSize="16" fontWeight="bold">ℹ️</SvgText>
+          <SvgText x="470" y="895" fill="#E65100" fontSize="10" fontWeight="bold">INFO DESK</SvgText>
+        </G>
       </G>
 
       {/* Emergency Exits indicator */}
       {emergencyMode && (
         <G>
-          <Circle cx="500" cy="100" r="20" fill={SECTION_COLORS.EXIT} />
-          <Circle cx="500" cy="900" r="20" fill={SECTION_COLORS.EXIT} />
-          <SvgText x="480" y="70" fill={SECTION_COLORS.EXIT} fontWeight="bold">EMERGENCY EXIT A</SvgText>
-          <SvgText x="480" y="940" fill={SECTION_COLORS.EXIT} fontWeight="bold">EMERGENCY EXIT B</SvgText>
+          <Rect x="400" y="50" width="200" height="40" fill="#F44336" rx="8" />
+          <Rect x="400" y="910" width="200" height="40" fill="#F44336" rx="8" />
+          <SvgText x="435" y="75" fill="white" fontWeight="900" fontSize="12">EMERGENCY EXIT A</SvgText>
+          <SvgText x="435" y="935" fill="white" fontWeight="900" fontSize="12">EMERGENCY EXIT B</SvgText>
         </G>
       )}
+
       {/* Routing Layer */}
       {routingPath && (
         <G>
+          {/* Pulsing effect for path */}
           <Path
             d={routingPath}
             fill="none"
             stroke={theme.colors.primary}
-            strokeWidth="6"
+            strokeWidth="8"
+            strokeOpacity="0.1"
             strokeLinecap="round"
-            strokeDasharray="10 10"
           />
-          <Circle cx={500} cy={950} r="10" fill={theme.colors.primary} />
-          <SvgText x="520" y="955" fill={theme.colors.primary} fontSize="12" fontWeight="bold">YOU ARE HERE</SvgText>
+          <Path
+            d={routingPath}
+            fill="none"
+            stroke={theme.colors.primary}
+            strokeWidth="4"
+            strokeLinecap="round"
+            strokeDasharray="8, 8"
+          />
+          
+          {/* Pulsing User Location Marker */}
+          <G x="500" y="950">
+             <Circle r="25" fill={theme.colors.primary} fillOpacity="0.1" />
+             <Circle r="18" fill={theme.colors.primary} fillOpacity="0.2" />
+             <Circle r="10" fill={theme.colors.primary} stroke="white" strokeWidth="2" />
+             <Circle r="4" fill="white" />
+          </G>
+          
+          <Rect x="440" y="970" width="120" height="20" fill="white" rx="10" stroke={theme.colors.primary} strokeWidth="1" />
+          <SvgText x="455" y="984" fill={theme.colors.primary} fontSize="10" fontWeight="900">YOU ARE HERE</SvgText>
         </G>
       )}
     </Svg>

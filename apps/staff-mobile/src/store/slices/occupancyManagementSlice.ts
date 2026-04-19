@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, @typescript-eslint/no-require-imports */
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import staffApiClient from '../../services/api/staffApiClient';
 import { Zone } from '@crowza/shared';
@@ -33,7 +34,7 @@ export const fetchManagedZones = createAsyncThunk(
     try {
       const response = await staffApiClient.get(`/venues/${venueId}/zones`);
       return response.data.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch zones');
     }
   }
@@ -51,7 +52,7 @@ export const adjustZoneCapacity = createAsyncThunk(
         reason: payload.reason,
       });
       return response.data.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       return rejectWithValue(error.response?.data?.message || 'Failed to adjust capacity');
     }
   }

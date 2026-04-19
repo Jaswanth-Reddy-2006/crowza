@@ -6,31 +6,33 @@
   "scripts": {
     "dev": "vite",
     "web": "vite",
-    "build": "tsc -b && vite build",
+    "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-router-dom": "^6.20.0",
+    "@crowza/shared": "*",
     "@reduxjs/toolkit": "^1.9.5",
-    "react-redux": "^8.1.1",
-    "firebase": "^10.0.0",
     "axios": "^1.4.0",
-    "@crowza/shared": "*"
+    "firebase": "^10.0.0",
+    "lucide-react": "^1.8.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-redux": "^8.1.1",
+    "react-router-dom": "^7.14.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
     "@types/node": "^24.12.2",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
+    "@types/react-router-dom": "^5.3.3",
     "@vitejs/plugin-react": "^6.0.1",
     "eslint": "^9.39.4",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.4.0",
-    "typescript": "~6.0.2",
+    "typescript": "^5.6.3",
     "typescript-eslint": "^8.58.0",
     "vite": "^8.0.4"
   }

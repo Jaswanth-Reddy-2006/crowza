@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, @typescript-eslint/no-require-imports */
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import staffApiClient from '../../services/api/staffApiClient';
 
@@ -39,7 +40,7 @@ export const fetchParkingLots = createAsyncThunk(
     try {
       const response = await staffApiClient.get('/parking/lots', { params: { venueId } });
       return response.data.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch parking lots');
     }
   }
@@ -53,7 +54,7 @@ export const updateParkingLotStatus = createAsyncThunk(
         status: payload.status,
       });
       return response.data.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       return rejectWithValue(error.response?.data?.message || 'Failed to update parking status');
     }
   }

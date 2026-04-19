@@ -1,594 +1,298 @@
-/**
- * Event Dashboard Screen - Fully Functional
- * Browse, filter, and attend events with real functionality
- */
-
-import React, { useState } from 'react';
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, @typescript-eslint/no-require-imports, @typescript-eslint/ban-ts-comment */
+import React, { useState, useMemo, useRef } from 'react';
 import {
   View,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
   SafeAreaView,
+  useWindowDimensions,
+  Image,
   Alert,
-  FlatList,
+  Animated,
+  Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { theme, Typography } from '@crowza/design-system';
+import { theme, Typography, TonalCard, SignatureButton } from '@crowza/design-system';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useNavigation, useRoute } from '@react-navigation/native';
 
-interface Venue {
-  name: string;
-  building: string;
-  zone: string;
-  capacity: number;
-  accessibility: string[];
-  facilities: string[];
-  activities: string[];
-  operatingHours: string;
-  parking: { location: string; price: number }[];
-  artInstallations: string[];
-}
-
-interface Event {
-  id: string;
-  name: string;
-  date: string;
-  time: string;
-  location: string;
-  type: string;
-  icon: string;
-  status: 'upcoming' | 'live' | 'completed';
-  attendees: number;
-  ticketPrice: number;
-  description: string;
-  venue: Venue;
-  rating: number;
-  reviews: number;
-}
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export default function EventDashboardScreen() {
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-  const [attendingEvents, setAttendingEvents] = useState<string[]>([]);
-  const [filterType, setFilterType] = useState<string>('all');
+  const { width } = useWindowDimensions();
+  const navigation = useNavigation<any>();
+  const route = useRoute<any>();
+  const { booking } = route.params || {};
 
-  const events: Event[] = [
+  // State & Animations
+  const [showNotifications, setShowNotifications] = useState(false);
+  const sheetAnim = useRef(new Animated.Value(0)).current;
+
+  const mockNotifications = [
     {
-      id: '1',
-      name: 'Main Concert - The Rockers',
-      date: 'April 20, 2026',
-      time: '6:00 PM - 10:00 PM',
-      location: 'Main Stage',
-      type: 'Music',
-      icon: '🎸',
-      status: 'upcoming',
-      attendees: 5234,
-      ticketPrice: 45,
-      description: 'An amazing rock concert featuring international artists and stunning light shows.',
-      rating: 4.8,
-      reviews: 234,
-      venue: {
-        name: 'Main Hall',
-        building: 'Building A',
-        zone: 'Zone 1',
-        capacity: 2000,
-        operatingHours: '10 AM - 11 PM',
-        accessibility: ['Wheelchairs', 'Elevators', 'ASL interpreters'],
-        facilities: ['Restrooms', 'Concessions', 'WiFi', 'First Aid'],
-        activities: ['Concerts', 'Dance performances', 'Light shows'],
-        parking: [
-          { location: 'Lot A', price: 10 },
-          { location: 'Lot B', price: 8 },
-        ],
-        artInstallations: ['Digital light show', '3D projections'],
-      },
+      id: 'n1',
+      title: 'Queue Alert',
+      message: 'North Gate is currently at 95% capacity. We recommend using the East Gate for faster entry.',
+      type: 'warning',
+      action: 'Route to East Gate',
+      icon: 'warning',
+      color: '#F59E0B'
     },
     {
-      id: '2',
-      name: 'Comedy Night - Laugh Out Loud',
-      date: 'April 20, 2026',
-      time: '7:30 PM - 9:30 PM',
-      location: 'Comedy Arena',
-      type: 'Comedy',
-      icon: '😂',
-      status: 'upcoming',
-      attendees: 1850,
-      ticketPrice: 25,
-      description: 'Get ready for hilarious performances from world-class comedians.',
-      rating: 4.5,
-      reviews: 156,
-      venue: {
-        name: 'Comedy Theater',
-        building: 'Building A',
-        zone: 'Zone 2',
-        capacity: 800,
-        operatingHours: '5 PM - 11 PM',
-        accessibility: ['Wheelchairs', 'Accessible seating'],
-        facilities: ['Restrooms', 'Bar service', 'WiFi'],
-        activities: ['Comedy shows', 'Stand-up performances', 'Improv'],
-        parking: [{ location: 'Lot A', price: 10 }],
-        artInstallations: ['Comedy murals'],
-      },
+      id: 'n2',
+      title: 'Food Court Update',
+      message: 'Refreshments at Section 4 are now 20% off for the next 15 minutes!',
+      type: 'info',
+      action: 'Show on Map',
+      icon: 'fast-food',
+      color: '#F98000'
     },
     {
-      id: '3',
-      name: 'Food Fest - Culinary Delights',
-      date: 'April 20, 2026',
-      time: '5:00 PM - 9:00 PM',
-      location: 'Food Court',
-      type: 'Food & Drink',
-      icon: '🍽️',
-      status: 'live',
-      attendees: 3500,
-      ticketPrice: 15,
-      description: 'Experience the best cuisines from around the world with live cooking demonstrations.',
-      rating: 4.7,
-      reviews: 312,
-      venue: {
-        name: 'Food Court',
-        building: 'Building A',
-        zone: 'Zone 3',
-        capacity: 500,
-        operatingHours: '11 AM - 10 PM',
-        accessibility: ['Wheelchairs', 'Elevators'],
-        facilities: ['Seating (150 tables)', 'Restrooms', 'WiFi', 'Concessions'],
-        activities: ['International cuisine', 'Fast food', 'Live cooking demos', 'Beverages'],
-        parking: [{ location: 'Lot B', price: 8 }],
-        artInstallations: ['Food truck murals', 'Photography displays'],
-      },
-    },
-    {
-      id: '4',
-      name: 'VIP Meet & Greet',
-      date: 'April 20, 2026',
-      time: '8:00 PM',
-      location: 'VIP Lounge',
-      type: 'Meet & Greet',
-      icon: '⭐',
-      status: 'upcoming',
-      attendees: 250,
-      ticketPrice: 150,
-      description: 'Exclusive meet and greet with artists and special guests. Limited capacity!',
-      rating: 4.9,
-      reviews: 89,
-      venue: {
-        name: 'VIP Lounge',
-        building: 'Building A',
-        zone: 'Zone 4',
-        capacity: 200,
-        operatingHours: '12 PM - Late night',
-        accessibility: ['Wheelchairs', 'Premium access'],
-        facilities: ['Premium seating', 'Private restrooms', 'Concierge', 'Bar'],
-        activities: ['Networking', 'Meet & greet', 'Premium service'],
-        parking: [{ location: 'Valet', price: 15 }],
-        artInstallations: ['Art gallery', 'Sculptures', 'Premium art collection'],
-      },
-    },
-    {
-      id: '5',
-      name: 'Interactive Art Exhibition',
-      date: 'April 19-21, 2026',
-      time: '10:00 AM - 8:00 PM',
-      location: 'Art Gallery',
-      type: 'Art & Culture',
-      icon: '🎨',
-      status: 'live',
-      attendees: 890,
-      ticketPrice: 12,
-      description: 'Immersive art installation featuring interactive displays and virtual reality experiences.',
-      rating: 4.6,
-      reviews: 178,
-      venue: {
-        name: 'Art Gallery',
-        building: 'Building B',
-        zone: 'Zone 5',
-        capacity: 300,
-        operatingHours: '10 AM - 6 PM',
-        accessibility: ['Wheelchairs', 'Elevators', 'Accessible restrooms'],
-        facilities: ['Lecture hall', 'Storage', 'WiFi', 'First Aid'],
-        activities: ['Art displays', 'Artist talks', 'Workshops', 'Interactive installations'],
-        parking: [{ location: 'Lot C', price: 5 }],
-        artInstallations: ['Rotating exhibitions', 'Interactive installations', 'Virtual reality art'],
-      },
-    },
-    {
-      id: '6',
-      name: 'Sports Tournament - Esports Finals',
-      date: 'April 21, 2026',
-      time: '2:00 PM - 6:00 PM',
-      location: 'Gaming Arena',
-      type: 'Sports',
-      icon: '🎮',
-      status: 'upcoming',
-      attendees: 2100,
-      ticketPrice: 30,
-      description: 'Watch professional esports teams compete in thrilling matches. Cheer for your favorites!',
-      rating: 4.7,
-      reviews: 245,
-      venue: {
-        name: 'Gaming Arena',
-        building: 'Building A',
-        zone: 'Zone 2',
-        capacity: 1500,
-        operatingHours: '10 AM - 10 PM',
-        accessibility: ['Wheelchairs', 'Accessible seating'],
-        facilities: ['Restrooms', 'Concessions', 'WiFi', 'Sound system'],
-        activities: ['Esports tournaments', 'Gaming workshops', 'Networking'],
-        parking: [{ location: 'Lot A', price: 10 }],
-        artInstallations: ['Gaming murals', 'LED displays'],
-      },
-    },
+      id: 'n3',
+      title: 'Weather Update',
+      message: 'Light showers expected in 20 minutes. Ponchos available at all Info Desks.',
+      type: 'service',
+      action: 'Find Nearest Desk',
+      icon: 'umbrella',
+      color: '#3B82F6'
+    }
   ];
 
-  const eventTypes = ['all', 'Music', 'Comedy', 'Food & Drink', 'Sports', 'Art & Culture'];
+  const COLUMN_WIDTH = useMemo(() => {
+    const horizontalPadding = 32;
+    const gap = 16;
+    return (width - (horizontalPadding * 2) - gap) / 2;
+  }, [width]);
 
-  const filteredEvents =
-    filterType === 'all' ? events : events.filter((event) => event.type === filterType);
-
-  const handleAttendEvent = (event: Event) => {
-    if (attendingEvents.includes(event.id)) {
-      setAttendingEvents(attendingEvents.filter((id) => id !== event.id));
-      Alert.alert('✓ Removed', `You cancelled attendance to ${event.name}`, [{ text: 'OK' }]);
-    } else {
-      setAttendingEvents([...attendingEvents, event.id]);
-      Alert.alert(
-        '✓ Added to Itinerary',
-        `You are now attending ${event.name}\n\n📅 ${event.date}\n🕐 ${event.time}\n📍 ${event.location}`,
-        [{ text: 'OK' }]
-      );
-    }
+  const openNotifications = () => {
+    setShowNotifications(true);
+    Animated.spring(sheetAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+      tension: 65,
+      friction: 11,
+    }).start();
   };
 
-  const renderEventCard = ({ item: event }: { item: Event }) => {
-    const isAttending = attendingEvents.includes(event.id);
-    const statusColor =
-      event.status === 'live'
-        ? '#FF5252'
-        : event.status === 'completed'
-        ? '#9E9E9E'
-        : theme.colors.primary;
-
-    return (
-      <TouchableOpacity
-        onPress={() => setSelectedEvent(event)}
-        activeOpacity={0.7}
-        style={styles.eventCard}
-      >
-        <LinearGradient
-          colors={[statusColor + '15', statusColor + '05']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.eventCardBg}
-        >
-          <View style={styles.eventCardContent}>
-            <View style={styles.eventTop}>
-              <View>
-                <Typography variant="titleMedium" weight="600" numberOfLines={1}>
-                  {event.icon} {event.name}
-                </Typography>
-                <View style={styles.typeBadge}>
-                  <Typography variant="labelSmall" color={statusColor} weight="600">
-                    {event.type}
-                  </Typography>
-                </View>
-              </View>
-              {event.status === 'live' && (
-                <View style={styles.liveBadge}>
-                  <Ionicons name="radio-button-on" size={10} color="#FF5252" />
-                  <Typography variant="labelSmall" color="#FF5252" weight="700">
-                    LIVE
-                  </Typography>
-                </View>
-              )}
-            </View>
-
-            <View style={styles.eventMeta}>
-              <Ionicons name="calendar-outline" size={13} color={theme.colors.outline} />
-              <Typography variant="labelSmall" color={theme.colors.outline}>
-                {event.date}
-              </Typography>
-            </View>
-
-            <View style={styles.eventMeta}>
-              <Ionicons name="time-outline" size={13} color={theme.colors.outline} />
-              <Typography variant="labelSmall" color={theme.colors.outline}>
-                {event.time}
-              </Typography>
-            </View>
-
-            <View style={styles.eventMeta}>
-              <Ionicons name="location-outline" size={13} color={theme.colors.outline} />
-              <Typography variant="labelSmall" color={theme.colors.outline}>
-                {event.venue.building}, {event.venue.zone}
-              </Typography>
-            </View>
-
-            <View style={styles.eventBottom}>
-              <View>
-                <View style={styles.attendInfo}>
-                  <Ionicons name="people-outline" size={13} color={theme.colors.primary} />
-                  <Typography variant="labelSmall" color={theme.colors.primary}>
-                    {event.attendees} attending
-                  </Typography>
-                </View>
-                <View style={[styles.attendInfo, { marginTop: 4 }]}>
-                  <Ionicons name="pricetag-outline" size={13} color={theme.colors.primary} />
-                  <Typography variant="labelSmall" color={theme.colors.primary} weight="600">
-                    ${event.ticketPrice}
-                  </Typography>
-                </View>
-              </View>
-              <TouchableOpacity
-                onPress={() => handleAttendEvent(event)}
-                style={[styles.attendBtn, isAttending && { backgroundColor: '#4CAF50' }]}
-              >
-                <Ionicons
-                  name={isAttending ? 'checkmark' : 'add'}
-                  size={14}
-                  color={isAttending ? 'white' : theme.colors.primary}
-                />
-              </TouchableOpacity>
-            </View>
-          </View>
-        </LinearGradient>
-      </TouchableOpacity>
-    );
+  const closeNotifications = () => {
+    Animated.spring(sheetAnim, {
+      toValue: 0,
+      useNativeDriver: true,
+      tension: 65,
+      friction: 11,
+    }).start(() => setShowNotifications(false));
   };
 
-  if (selectedEvent) {
-    const isAttending = attendingEvents.includes(selectedEvent.id);
-
+  if (!booking) {
     return (
       <SafeAreaView style={styles.container}>
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <View style={styles.detailHeader}>
-            <TouchableOpacity onPress={() => setSelectedEvent(null)}>
-              <Ionicons name="chevron-back" size={24} color={theme.colors.primary} />
-            </TouchableOpacity>
-            <Typography variant="headlineSmall" weight="700">
-              Event Details
-            </Typography>
-            <View style={{ width: 24 }} />
-          </View>
-
-          <LinearGradient colors={['#2196F3', '#1976D2']} style={styles.heroSection}>
-            <Typography variant="displayMedium" weight="700">
-              {selectedEvent.icon}
-            </Typography>
-          </LinearGradient>
-
-          <View style={styles.detailContent}>
-            <Typography variant="headlineSmall" weight="700" style={{ marginBottom: 16 }}>
-              {selectedEvent.name}
-            </Typography>
-
-            <View style={styles.ratingRow}>
-              <Ionicons name="star" size={16} color="#FFB81C" />
-              <Typography variant="labelMedium" weight="600" style={{ marginLeft: 4 }}>
-                {selectedEvent.rating}/5
-              </Typography>
-              <Typography variant="labelSmall" color={theme.colors.outline} style={{ marginLeft: 4 }}>
-                ({selectedEvent.reviews} reviews)
-              </Typography>
-            </View>
-
-            <View style={styles.divider} />
-
-            <Typography variant="titleSmall" weight="600" style={{ marginBottom: 12 }}>
-              WHEN & WHERE
-            </Typography>
-
-            <View style={styles.detailRow}>
-              <Ionicons name="calendar" size={20} color={theme.colors.primary} />
-              <View style={{ flex: 1 }}>
-                <Typography variant="labelSmall" color={theme.colors.outline}>
-                  Date & Time
-                </Typography>
-                <Typography variant="bodyMedium" weight="600">
-                  {selectedEvent.date} • {selectedEvent.time}
-                </Typography>
-              </View>
-            </View>
-
-            <View style={styles.detailRow}>
-              <Ionicons name="location" size={20} color={theme.colors.primary} />
-              <View style={{ flex: 1 }}>
-                <Typography variant="labelSmall" color={theme.colors.outline}>
-                  Venue Location
-                </Typography>
-                <Typography variant="bodyMedium" weight="600">
-                  {selectedEvent.venue.name}
-                </Typography>
-                <Typography variant="labelSmall" color={theme.colors.outline} style={{ marginTop: 4 }}>
-                  {selectedEvent.venue.building} • {selectedEvent.venue.zone}
-                </Typography>
-              </View>
-            </View>
-
-            <View style={styles.divider} />
-
-            <Typography variant="titleSmall" weight="600" style={{ marginBottom: 12 }}>
-              PRICING & ATTENDEES
-            </Typography>
-
-            <View style={styles.detailRow}>
-              <Ionicons name="pricetag" size={20} color={theme.colors.primary} />
-              <View style={{ flex: 1 }}>
-                <Typography variant="labelSmall" color={theme.colors.outline}>
-                  Ticket Price
-                </Typography>
-                <Typography variant="bodyMedium" weight="600">
-                  ${selectedEvent.ticketPrice} per ticket
-                </Typography>
-              </View>
-            </View>
-
-            <View style={styles.detailRow}>
-              <Ionicons name="people" size={20} color={theme.colors.primary} />
-              <View style={{ flex: 1 }}>
-                <Typography variant="labelSmall" color={theme.colors.outline}>
-                  Current Attendees
-                </Typography>
-                <Typography variant="bodyMedium" weight="600">
-                  {selectedEvent.attendees} people attending
-                </Typography>
-              </View>
-            </View>
-
-            <View style={styles.divider} />
-
-            <Typography variant="titleSmall" weight="600" style={{ marginBottom: 12 }}>
-              VENUE INFORMATION
-            </Typography>
-
-            <View style={styles.infoBox}>
-              <View style={styles.infoPair}>
-                <Typography variant="labelSmall" color={theme.colors.outline}>
-                  Capacity
-                </Typography>
-                <Typography variant="bodyMedium" weight="600">
-                  {selectedEvent.venue.capacity} people
-                </Typography>
-              </View>
-              <View style={styles.infoPair}>
-                <Typography variant="labelSmall" color={theme.colors.outline}>
-                  Hours
-                </Typography>
-                <Typography variant="bodyMedium" weight="600">
-                  {selectedEvent.venue.operatingHours}
-                </Typography>
-              </View>
-            </View>
-
-            <Typography variant="labelSmall" color={theme.colors.outline} weight="600" style={{ marginTop: 12, marginBottom: 6 }}>
-              Facilities
-            </Typography>
-            <View style={styles.tagContainer}>
-              {selectedEvent.venue.facilities.map((facility, idx) => (
-                <View key={idx} style={styles.tag}>
-                  <Typography variant="labelSmall">{facility}</Typography>
-                </View>
-              ))}
-            </View>
-
-            <Typography variant="labelSmall" color={theme.colors.outline} weight="600" style={{ marginTop: 12, marginBottom: 6 }}>
-              Accessibility
-            </Typography>
-            <View style={styles.tagContainer}>
-              {selectedEvent.venue.accessibility.map((access, idx) => (
-                <View key={idx} style={styles.tag}>
-                  <Ionicons name="checkmark-circle" size={12} color={theme.colors.primary} />
-                  <Typography variant="labelSmall" style={{ marginLeft: 4 }}>
-                    {access}
-                  </Typography>
-                </View>
-              ))}
-            </View>
-
-            <Typography variant="labelSmall" color={theme.colors.outline} weight="600" style={{ marginTop: 12, marginBottom: 6 }}>
-              Activities
-            </Typography>
-            <View style={styles.tagContainer}>
-              {selectedEvent.venue.activities.map((activity, idx) => (
-                <View key={idx} style={styles.tag}>
-                  <Typography variant="labelSmall">{activity}</Typography>
-                </View>
-              ))}
-            </View>
-
-            <Typography variant="labelSmall" color={theme.colors.outline} weight="600" style={{ marginTop: 12, marginBottom: 6 }}>
-              Parking Options
-            </Typography>
-            <View style={styles.tagContainer}>
-              {selectedEvent.venue.parking.map((lot, idx) => (
-                <View key={idx} style={styles.tag}>
-                  <Typography variant="labelSmall">
-                    {lot.location} (${lot.price})
-                  </Typography>
-                </View>
-              ))}
-            </View>
-
-            <Typography variant="labelSmall" color={theme.colors.outline} weight="600" style={{ marginTop: 12, marginBottom: 6 }}>
-              Art & Installations
-            </Typography>
-            <View style={styles.tagContainer}>
-              {selectedEvent.venue.artInstallations.map((art, idx) => (
-                <View key={idx} style={styles.tag}>
-                  <Typography variant="labelSmall">{art}</Typography>
-                </View>
-              ))}
-            </View>
-
-            <View style={styles.divider} />
-
-            <Typography variant="titleSmall" weight="600" style={{ marginBottom: 12 }}>
-              ABOUT
-            </Typography>
-            <Typography variant="bodyMedium" color={theme.colors.onSurfaceVariant}>
-              {selectedEvent.description}
-            </Typography>
-          </View>
-        </ScrollView>
-
-        <View style={styles.detailActions}>
-          <TouchableOpacity
-            onPress={() => handleAttendEvent(selectedEvent)}
-            style={[styles.actionBtn, isAttending && { backgroundColor: '#FF5252' }]}
+        <View style={styles.emptyState}>
+          <Ionicons name="alert-circle-outline" size={64} color={theme.colors.outline} />
+          <Typography variant="titleMedium" weight="700" color={theme.colors.onSurface} style={{ marginTop: 16 }}>
+            No Event Selected
+          </Typography>
+          <Typography variant="bodyMedium" color={theme.colors.outline} style={{ textAlign: 'center', marginTop: 8, paddingHorizontal: 40 }}>
+            Select an event from your bookings to manage it here.
+          </Typography>
+          <TouchableOpacity 
+             style={styles.backButton}
+             onPress={() => navigation.goBack()}
           >
-            <Ionicons name={isAttending ? 'trash' : 'add-circle'} size={18} color="white" />
-            <Typography color="white" weight="700" style={{ fontSize: 13 }}>
-              {isAttending ? 'Remove' : 'Add to Itinerary'}
-            </Typography>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#4CAF50' }]}>
-            <Ionicons name="navigate" size={18} color="white" />
-            <Typography color="white" weight="700" style={{ fontSize: 13 }}>
-              Navigate
-            </Typography>
+            <Typography variant="labelLarge" color="white">Go Back</Typography>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
     );
   }
 
+  const managementButtons = [
+    { id: 'pass', title: 'Digital Pass', icon: 'qr-code-outline', screen: 'Ticket', color: theme.colors.primary },
+    { id: 'map', title: 'Venue Map', icon: 'map-outline', screen: 'Map', color: '#F98000' },
+    { id: 'queues', title: 'Wait Times', icon: 'timer-outline', screen: 'Wait', color: '#F59E0B' },
+    { id: 'heatmap', title: 'Crowd Status', icon: 'flame-outline', screen: 'Heat', color: '#EF4444' },
+    { id: 'prediction', title: 'Queue Prediction', icon: 'trending-up', screen: 'Wait', color: '#8B5CF6', isExtra: true },
+    { id: 'info', title: 'Event Info', icon: 'information-circle-outline', screen: 'Info', color: '#3B82F6' },
+    { id: 'parking', title: 'Parking', icon: 'car-outline', screen: 'Park', color: '#EC4899' },
+    { id: 'emergency', title: 'Emergency', icon: 'alert-circle-outline', screen: 'Emergency', color: '#DC2626' },
+  ];
+
+  const handleAction = (btn: any) => {
+    if (btn.id === 'prediction') {
+       navigation.navigate('Wait', { booking, predictionMode: true });
+       return;
+    }
+    navigation.navigate(btn.screen, { booking });
+  };
+
+  const sheetTranslateY = sheetAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [SCREEN_HEIGHT, 0],
+  });
+
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.filterBar}>
-        <FlatList
-          horizontal
-          data={eventTypes}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              onPress={() => setFilterType(item)}
-              style={[
-                styles.filterChip,
-                filterType === item && { backgroundColor: theme.colors.primary },
-              ]}
-            >
-              <Typography
-                variant="labelSmall"
-                color={filterType === item ? 'white' : theme.colors.onSurfaceVariant}
-                weight="600"
-              >
-                {item === 'all' ? 'All Events' : item}
-              </Typography>
-            </TouchableOpacity>
-          )}
-          keyExtractor={(item) => item}
-          showsHorizontalScrollIndicator={false}
-          style={{ paddingHorizontal: 12 }}
-        />
+      <View style={styles.header}>
+        <TouchableOpacity 
+          onPress={() => navigation.goBack()} 
+          style={styles.headerBackBtn}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="chevron-back" size={24} color={theme.colors.onSurface} />
+        </TouchableOpacity>
+        <Typography variant="titleLarge" weight="900">Dashboard</Typography>
+        <TouchableOpacity style={styles.headerActionBtn} onPress={openNotifications}>
+          <Ionicons name="notifications-outline" size={24} color={theme.colors.onSurface} />
+          <View style={styles.notificationDot} />
+        </TouchableOpacity>
       </View>
 
-      <FlatList
-        data={filteredEvents}
-        renderItem={renderEventCard}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
-      />
+      >
+        <View style={styles.eventCardContainer}>
+          <LinearGradient
+            colors={['#1E1B4B', '#312E81']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.eventCard}
+          >
+            <View style={styles.cardInfo}>
+              <View style={styles.badge}>
+                <Typography variant="labelSmall" color="#FFFFFF" weight="800">PREMIUM ACCESS</Typography>
+              </View>
+              <Typography variant="headlineSmall" color="#FFFFFF" weight="800" style={{ marginTop: 12 }}>
+                {booking.title}
+              </Typography>
+              <View style={styles.metaRow}>
+                <Ionicons name="location" size={14} color="rgba(255,255,255,0.7)" />
+                <Typography variant="bodySmall" color="rgba(255,255,255,0.7)" style={{ marginLeft: 4 }}>
+                   Main Stadium • Arena 4
+                </Typography>
+              </View>
+              
+              <View style={styles.ticketGrid}>
+                <View style={styles.ticketItem}>
+                  <Typography variant="labelSmall" color="rgba(255,255,255,0.5)">SEAT</Typography>
+                  <Typography variant="titleMedium" color="#FFFFFF" weight="700">{booking.seat?.split(',')[2]?.trim() || 'GA'}</Typography>
+                </View>
+                <View style={[styles.ticketItem, { borderLeftWidth: 1, borderLeftColor: 'rgba(255,255,255,0.1)', paddingLeft: 16 }]}>
+                  <Typography variant="labelSmall" color="rgba(255,255,255,0.5)">GATE</Typography>
+                  <Typography variant="titleMedium" color="#FFFFFF" weight="700">{booking.gate || 'A1'}</Typography>
+                </View>
+              </View>
+            </View>
+          </LinearGradient>
+          <View style={styles.cardDecoration} />
+        </View>
+
+        <View style={styles.statusBanner}>
+          <View style={styles.pulseDot} />
+          <Typography variant="labelMedium" weight="700" color={theme.colors.primary}>
+            LIVE: LOW WAIT TIMES AT NORTH GATE
+          </Typography>
+        </View>
+
+        <Typography variant="titleMedium" weight="700" style={styles.sectionTitle}>
+          Services & Tools
+        </Typography>
+
+        <View style={styles.grid}>
+          {managementButtons.map((btn) => (
+            <TouchableOpacity
+              key={btn.id}
+              style={[styles.gridItem, { width: COLUMN_WIDTH }]}
+              onPress={() => handleAction(btn)}
+              activeOpacity={0.8}
+            >
+              <View style={[styles.iconWrapper, { backgroundColor: btn.color + '15' }]}>
+                {btn.icon === 'trending-up' ? (
+                  <MaterialCommunityIcons name="trending-up" size={28} color={btn.color} />
+                ) : (
+                  <Ionicons name={btn.icon as any} size={28} color={btn.color} />
+                )}
+              </View>
+              <Typography variant="labelLarge" weight="700" color="#1F2937" style={{ marginTop: 12 }}>
+                {btn.title}
+              </Typography>
+              {btn.isExtra && (
+                <View style={styles.newBadge}>
+                  <Typography variant="labelSmall" color="white" weight="900" style={{ fontSize: 8 }}>NEW</Typography>
+                </View>
+              )}
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        <TouchableOpacity style={styles.supportCard}>
+          <LinearGradient
+            colors={['#FFF7ED', '#FFEDD5']}
+            style={styles.supportGradient}
+          >
+            <View style={styles.supportIcon}>
+              <Ionicons name="headset" size={20} color="#F98000" />
+            </View>
+            <View style={{ flex: 1, marginLeft: 16 }}>
+              <Typography variant="titleSmall" color="#92400E" weight="700">Need Help?</Typography>
+              <Typography variant="bodySmall" color="#92400E">Chat with venue support 24/7</Typography>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#F98000" />
+          </LinearGradient>
+        </TouchableOpacity>
+
+      </ScrollView>
+
+      {/* Actionable Notification Sheet */}
+      {showNotifications && (
+        <>
+          <TouchableOpacity 
+            style={StyleSheet.absoluteFill} 
+            activeOpacity={1} 
+            onPress={closeNotifications}
+          >
+            <View style={styles.backdrop} />
+          </TouchableOpacity>
+          <Animated.View style={[styles.notifSheet, { transform: [{ translateY: sheetTranslateY }] }]}>
+             <View style={styles.sheetHandle} />
+             <View style={styles.sheetHeader}>
+                <Typography variant="headlineSmall" weight="800">Operational Alerts</Typography>
+                <Typography variant="bodySmall" color={theme.colors.outline}>Live updates for your session</Typography>
+             </View>
+
+             <ScrollView style={styles.notifScroll} showsVerticalScrollIndicator={false}>
+                {mockNotifications.map((notif) => (
+                   <TonalCard key={notif.id} variant="high" style={styles.notifCard}>
+                      <View style={{ flexDirection: 'row', gap: 16 }}>
+                         <View style={[styles.notifIcon, { backgroundColor: notif.color + '20' }]}>
+                            <Ionicons name={notif.icon as any} size={20} color={notif.color} />
+                         </View>
+                         <View style={{ flex: 1 }}>
+                            <Typography variant="titleMedium" weight="800" color={theme.colors.onSurface}>{notif.title}</Typography>
+                            <Typography variant="bodyMedium" color={theme.colors.onSurfaceVariant} style={{ marginTop: 4 }}>
+                               {notif.message}
+                            </Typography>
+                            
+                            <TouchableOpacity 
+                               style={[styles.notifActionButton, { borderColor: notif.color + '40' }]}
+                               onPress={() => {
+                                  Alert.alert(notif.title, `Executing action: ${notif.action}`);
+                                  closeNotifications();
+                                  if (notif.id === 'n1') navigation.navigate('Map', { target: 'East Gate' });
+                               }}
+                            >
+                               <Typography variant="labelLarge" weight="800" color={notif.color}>{notif.action.toUpperCase()}</Typography>
+                               <Ionicons name="chevron-forward" size={16} color={notif.color} />
+                            </TouchableOpacity>
+                         </View>
+                      </View>
+                   </TonalCard>
+                ))}
+                <View style={{ height: 40 }} />
+             </ScrollView>
+          </Animated.View>
+        </>
+      )}
     </SafeAreaView>
   );
 }
@@ -596,169 +300,230 @@ export default function EventDashboardScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: '#F9FAFB',
   },
-  filterBar: {
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.outlineVariant,
-  },
-  filterChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    marginHorizontal: 4,
-    borderRadius: 20,
-    backgroundColor: theme.colors.surfaceVariant,
-    borderWidth: 1,
-    borderColor: theme.colors.outlineVariant,
-  },
-  listContent: {
-    paddingHorizontal: 12,
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
     paddingVertical: 12,
-    gap: 12,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  headerBackBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#F3F4F6',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerActionBtn: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  notificationDot: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#EF4444',
+    borderWidth: 1.5,
+    borderColor: 'white',
+  },
+  scrollContent: {
+    padding: 24,
+    paddingBottom: 60,
+  },
+  eventCardContainer: {
+    position: 'relative',
+    marginBottom: 24,
   },
   eventCard: {
-    borderRadius: 12,
+    borderRadius: 28,
+    padding: 24,
     overflow: 'hidden',
+    zIndex: 1,
   },
-  eventCardBg: {
-    padding: 12,
+  cardDecoration: {
+    position: 'absolute',
+    bottom: -8,
+    left: '10%',
+    width: '80%',
+    height: 40,
+    backgroundColor: '#1E1B4B',
+    borderRadius: 20,
+    opacity: 0.1,
+    zIndex: 0,
   },
-  eventCardContent: {
-    gap: 8,
-  },
-  eventTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-  },
-  typeBadge: {
-    alignSelf: 'flex-start',
-    marginTop: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 4,
-    backgroundColor: theme.colors.primary + '15',
-  },
-  liveBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-    paddingHorizontal: 6,
-    paddingVertical: 3,
-    borderRadius: 4,
-    backgroundColor: '#FF5252' + '20',
-  },
-  eventMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  eventBottom: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingTop: 6,
-    borderTopWidth: 0.5,
-    borderTopColor: theme.colors.outlineVariant,
-  },
-  attendInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  attendBtn: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: theme.colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'white',
-  },
-  // Detail view
-  detailHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.outlineVariant,
-  },
-  heroSection: {
-    height: 100,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  detailContent: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    paddingBottom: 100,
-  },
-  ratingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.outlineVariant,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: theme.colors.outlineVariant,
-    marginVertical: 16,
-  },
-  infoBox: {
-    flexDirection: 'row',
-    gap: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    backgroundColor: theme.colors.surfaceVariant,
+  badge: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
     borderRadius: 8,
+    alignSelf: 'flex-start',
   },
-  infoPair: {
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  ticketGrid: {
+    flexDirection: 'row',
+    marginTop: 24,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 16,
+    padding: 16,
+  },
+  ticketItem: {
     flex: 1,
   },
-  tagContainer: {
+  statusBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.primary + '10',
+    padding: 12,
+    borderRadius: 16,
+    marginBottom: 24,
+  },
+  pulseDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: theme.colors.primary,
+    marginRight: 10,
+  },
+  sectionTitle: {
+    marginBottom: 16,
+    color: '#111827',
+  },
+  grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: 16,
   },
-  tag: {
-    flexDirection: 'row',
+  gridItem: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 20,
     alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    backgroundColor: theme.colors.primary + '20',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: theme.colors.primary + '30',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
+    position: 'relative',
   },
-  detailRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 12,
-    paddingVertical: 12,
-  },
-  detailActions: {
-    flexDirection: 'row',
-    gap: 8,
-    padding: 12,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.outlineVariant,
-  },
-  actionBtn: {
-    flex: 1,
-    flexDirection: 'row',
+  iconWrapper: {
+    width: 56,
+    height: 56,
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 6,
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    borderRadius: 8,
+  },
+  newBadge: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    backgroundColor: '#EF4444',
+    paddingHorizontal: 4,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  supportCard: {
+    marginTop: 32,
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  supportGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+  },
+  supportIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: 'white',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+  },
+  backButton: {
+    marginTop: 24,
     backgroundColor: theme.colors.primary,
+    paddingHorizontal: 32,
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+  },
+  notifSheet: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    height: SCREEN_HEIGHT * 0.75,
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 36,
+    borderTopRightRadius: 36,
+    paddingTop: 12,
+    elevation: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+  },
+  sheetHandle: {
+    width: 40,
+    height: 5,
+    backgroundColor: '#E5E7EB',
+    borderRadius: 2.5,
+    alignSelf: 'center',
+    marginBottom: 20,
+  },
+  sheetHeader: {
+    paddingHorizontal: 28,
+    marginBottom: 24,
+  },
+  notifScroll: {
+    paddingHorizontal: 20,
+  },
+  notifCard: {
+    marginBottom: 16,
+    padding: 20,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
+  },
+  notifIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  notifActionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    borderWidth: 1.5,
   },
 });

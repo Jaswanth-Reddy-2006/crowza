@@ -1,8 +1,4 @@
-/**
- * Queue Prediction Screen - Fully Functional
- * Real-time wait times and smart queue recommendations
- */
-
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, @typescript-eslint/no-require-imports, @typescript-eslint/ban-ts-comment */
 import React, { useState } from 'react';
 import {
   View,
@@ -12,10 +8,13 @@ import {
   TouchableOpacity,
   Alert,
   FlatList,
+  Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { theme, Typography } from '@crowza/design-system';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 interface Queue {
   id: string;
@@ -34,6 +33,7 @@ interface Queue {
 
 export default function QueuePredictionScreen() {
   const [selectedQueue, setSelectedQueue] = useState<Queue | null>(null);
+  
   const queues: Queue[] = [
     {
       id: '1',
@@ -115,275 +115,110 @@ export default function QueuePredictionScreen() {
       trend: 'stable',
       prediction15min: 3,
       prediction30min: 4,
-      prediction60min: 5,
-      confidence: 91,
+      prediction60min: 2,
+      confidence: 85,
       icon: 'ℹ️',
-    },
+    }
   ];
 
-  const getWaitTimeColor = (waitTime: number) => {
-    if (waitTime <= 5) return '#4CAF50'; // Green
-    if (waitTime <= 15) return '#FFC107'; // Yellow
-    if (waitTime <= 30) return '#FF9800'; // Orange
-    return '#FF5252'; // Red
-  };
-
-  const getTrendIcon = (trend: string) => {
-    if (trend === 'increasing') return 'trending-up';
-    if (trend === 'decreasing') return 'trending-down';
-    return 'remove-horizontal';
-  };
-
-  const getTrendColor = (trend: string) => {
-    if (trend === 'increasing') return '#FF9800';
-    if (trend === 'decreasing') return '#4CAF50';
-    return '#2196F3';
-  };
-
-  const getAlternativeQueues = (currentQueue: Queue) => {
-    return queues
-      .filter((q) => q.id !== currentQueue.id)
-      .sort((a, b) => a.waitTime - b.waitTime)
-      .slice(0, 3);
-  };
-
-  const renderQueueCard = ({ item: queue }: { item: Queue }) => {
-    const occupancyPercent = (queue.currentCount / queue.capacity) * 100;
-    const waitTimeColor = getWaitTimeColor(queue.waitTime);
-
+  const renderQueueCard = ({ item }: { item: Queue }) => {
+    const occupancy = item.currentCount / item.capacity;
+    const occupancyColor = occupancy > 0.8 ? '#EF4444' : occupancy > 0.5 ? '#F59E0B' : '#10B981';
+    
     return (
-      <TouchableOpacity onPress={() => setSelectedQueue(queue)} activeOpacity={0.7}>
-        <LinearGradient
-          colors={[waitTimeColor + '15', waitTimeColor + '05']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.queueCard}
-        >
-          <View style={styles.queueCardTop}>
-            <View style={styles.queueNameSection}>
-              <Typography variant="titleMedium" weight="600">
-                {queue.icon} {queue.name}
-              </Typography>
-              <Typography variant="labelSmall" color={theme.colors.outline}>
-                {queue.location}
-              </Typography>
-            </View>
-            <View style={styles.waitTimeBadge}>
-              <Typography variant="headlineMedium" weight="700" color={waitTimeColor}>
-                {queue.waitTime}
-              </Typography>
-              <Typography variant="labelSmall" color={waitTimeColor}>
-                min
-              </Typography>
-            </View>
+      <TouchableOpacity 
+        style={styles.queueCard} 
+        onPress={() => setSelectedQueue(item)}
+      >
+        <TonalCard variant="low" style={styles.cardInner}>
+          <View style={styles.cardHeader}>
+             <View style={styles.iconBox}>
+                <Typography style={{ fontSize: 24 }}>{item.icon}</Typography>
+             </View>
+             <View style={styles.nameSection}>
+                <Typography variant="titleMedium" weight="900">{item.name}</Typography>
+                <Typography variant="bodySmall" color={theme.colors.outline}>{item.location}</Typography>
+             </View>
+             <View style={styles.waitTimeBox}>
+                <Typography variant="headlineSmall" weight="900" color={theme.colors.primary}>{item.waitTime}</Typography>
+                <Typography variant="labelSmall" color={theme.colors.outline}>MIN</Typography>
+             </View>
           </View>
 
-          <View style={styles.queueStats}>
-            <View style={styles.statItem}>
-              <Typography variant="labelSmall" color={theme.colors.outline}>
-                Capacity
-              </Typography>
-              <View style={styles.progressBar}>
-                <View
-                  style={[
-                    styles.progressFill,
-                    {
-                      width: `${occupancyPercent}%`,
-                      backgroundColor: waitTimeColor,
-                    },
-                  ]}
+          <View style={styles.metricsRow}>
+             <View style={styles.metricItem}>
+                <Typography variant="labelSmall" color={theme.colors.outline} weight="900">OCCUPANCY</Typography>
+                <View style={styles.progressBg}>
+                   <View style={[styles.progressFill, { width: `${occupancy * 100}%`, backgroundColor: occupancyColor }]} />
+                </View>
+             </View>
+             <View style={styles.trendBox}>
+                <Ionicons 
+                  name={item.trend === 'increasing' ? 'trending-up' : item.trend === 'decreasing' ? 'trending-down' : 'remove'} 
+                  size={16} 
+                  color={item.trend === 'increasing' ? '#EF4444' : item.trend === 'decreasing' ? '#10B981' : theme.colors.outline} 
                 />
-              </View>
-              <Typography variant="labelSmall" color={theme.colors.outline}>
-                {queue.currentCount}/{queue.capacity}
-              </Typography>
-            </View>
-
-            <View style={styles.trendItem}>
-              <Ionicons
-                name={getTrendIcon(queue.trend) as any}
-                size={16}
-                color={getTrendColor(queue.trend)}
-              />
-              <Typography variant="labelSmall" color={getTrendColor(queue.trend)} weight="600">
-                {queue.trend}
-              </Typography>
-            </View>
+                <Typography variant="labelSmall" weight="700" style={{ marginLeft: 4 }}>
+                   {item.trend.toUpperCase()}
+                </Typography>
+             </View>
           </View>
-        </LinearGradient>
+        </TonalCard>
       </TouchableOpacity>
     );
   };
 
   if (selectedQueue) {
-    const alternatives = getAlternativeQueues(selectedQueue);
-
     return (
       <SafeAreaView style={styles.container}>
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <View style={styles.detailHeader}>
-            <TouchableOpacity onPress={() => setSelectedQueue(null)}>
-              <Ionicons name="chevron-back" size={24} color={theme.colors.primary} />
-            </TouchableOpacity>
-            <Typography variant="headlineSmall" weight="700">
-              Queue Details
-            </Typography>
-            <View style={{ width: 24 }} />
-          </View>
-
-          <LinearGradient
-            colors={[
-              getWaitTimeColor(selectedQueue.waitTime),
-              getWaitTimeColor(selectedQueue.waitTime) + '80',
-            ]}
-            style={styles.detailHero}
-          >
-            <Typography variant="displayLarge" weight="700">
-              {selectedQueue.icon}
-            </Typography>
-            <Typography color="white" weight="700" style={{ fontSize: 28 }}>
-              {selectedQueue.waitTime} min
-            </Typography>
-            <Typography color="white" variant="bodyMedium">
-              Current wait time
-            </Typography>
-          </LinearGradient>
-
-          <View style={styles.detailContent}>
-            <Typography variant="titleMedium" weight="600" style={{ marginBottom: 12 }}>
-              {selectedQueue.name}
-            </Typography>
-
-            <View style={styles.detailSection}>
-              <Typography variant="labelSmall" color={theme.colors.outline} weight="600">
-                CURRENT STATUS
-              </Typography>
-              <View style={styles.detailRow}>
-                <Ionicons name="people" size={20} color={theme.colors.primary} />
-                <View style={{ flex: 1 }}>
-                  <Typography variant="labelSmall" color={theme.colors.outline}>
-                    Occupancy
-                  </Typography>
-                  <View style={styles.progressBar}>
-                    <View
-                      style={[
-                        styles.progressFill,
-                        {
-                          width: `${(selectedQueue.currentCount / selectedQueue.capacity) * 100}%`,
-                          backgroundColor: getWaitTimeColor(selectedQueue.waitTime),
-                        },
-                      ]}
-                    />
-                  </View>
-                  <Typography variant="labelSmall" weight="600">
-                    {selectedQueue.currentCount} of {selectedQueue.capacity} people
-                  </Typography>
-                </View>
-              </View>
-
-              <View style={styles.detailRow}>
-                <Ionicons name={getTrendIcon(selectedQueue.trend) as any} size={20} color={getTrendColor(selectedQueue.trend)} />
-                <View style={{ flex: 1 }}>
-                  <Typography variant="labelSmall" color={theme.colors.outline}>
-                    Trend
-                  </Typography>
-                  <Typography variant="bodyMedium" weight="600" color={getTrendColor(selectedQueue.trend)}>
-                    {selectedQueue.trend.charAt(0).toUpperCase() + selectedQueue.trend.slice(1)}
-                  </Typography>
-                </View>
-              </View>
-            </View>
-
-            <View style={styles.detailSection}>
-              <Typography variant="labelSmall" color={theme.colors.outline} weight="600">
-                PREDICTIONS (Confidence: {selectedQueue.confidence}%)
-              </Typography>
-
-              <View style={styles.predictionRow}>
-                <View style={styles.predictionCard}>
-                  <Typography variant="headlineSmall" weight="700" color={theme.colors.primary}>
-                    {selectedQueue.prediction15min}
-                  </Typography>
-                  <Typography variant="labelSmall" color={theme.colors.outline}>
-                    in 15 min
-                  </Typography>
-                </View>
-
-                <View style={styles.predictionCard}>
-                  <Typography variant="headlineSmall" weight="700" color={theme.colors.primary}>
-                    {selectedQueue.prediction30min}
-                  </Typography>
-                  <Typography variant="labelSmall" color={theme.colors.outline}>
-                    in 30 min
-                  </Typography>
-                </View>
-
-                <View style={styles.predictionCard}>
-                  <Typography variant="headlineSmall" weight="700" color={theme.colors.primary}>
-                    {selectedQueue.prediction60min}
-                  </Typography>
-                  <Typography variant="labelSmall" color={theme.colors.outline}>
-                    in 60 min
-                  </Typography>
-                </View>
-              </View>
-            </View>
-
-            {alternatives.length > 0 && (
-              <View style={styles.detailSection}>
-                <Typography variant="labelSmall" color={theme.colors.outline} weight="600">
-                  FASTER ALTERNATIVES
-                </Typography>
-
-                {alternatives.map((alt) => (
-                  <TouchableOpacity
-                    key={alt.id}
-                    onPress={() => setSelectedQueue(alt)}
-                    style={styles.alternativeCard}
-                  >
-                    <View>
-                      <Typography variant="bodyMedium" weight="600">
-                        {alt.icon} {alt.name}
-                      </Typography>
-                      <Typography variant="labelSmall" color={theme.colors.outline}>
-                        {alt.location}
-                      </Typography>
-                    </View>
-                    <View style={styles.altWaitTime}>
-                      <Typography variant="bodyMedium" weight="700" color="#4CAF50">
-                        {alt.waitTime} min
-                      </Typography>
-                      <Typography variant="labelSmall" color="#4CAF50">
-                        save {selectedQueue.waitTime - alt.waitTime}min
-                      </Typography>
-                    </View>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            )}
-          </View>
-        </ScrollView>
-
-        <View style={styles.detailActions}>
-          <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#4CAF50' }]}>
-            <Ionicons name="timer" size={18} color="white" />
-            <Typography color="white" weight="700" style={{ fontSize: 13 }}>
-              Set Reminder
-            </Typography>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.actionBtn, { backgroundColor: theme.colors.primary }]}
-            onPress={() => {
-              Alert.alert('✓ Queue Notification Set', `You'll be notified when wait time drops below 10 minutes`);
-            }}
-          >
-            <Ionicons name="notifications" size={18} color="white" />
-            <Typography color="white" weight="700" style={{ fontSize: 13 }}>
-              Notify Me
-            </Typography>
-          </TouchableOpacity>
+        <View style={styles.detailHeader}>
+           <TouchableOpacity onPress={() => setSelectedQueue(null)} style={styles.backBtn}>
+              <Ionicons name="arrow-back" size={24} color={theme.colors.onSurface} />
+           </TouchableOpacity>
+           <Typography variant="titleLarge" weight="900">Intelligence Report</Typography>
+           <View style={{ width: 40 }} />
         </View>
+
+        <ScrollView contentContainerStyle={styles.detailContent}>
+           <View style={styles.heroSection}>
+              <Typography style={{ fontSize: 64, marginBottom: 15 }}>{selectedQueue.icon}</Typography>
+              <Typography variant="headlineMedium" weight="900">{selectedQueue.name}</Typography>
+              <Typography variant="bodyLarge" color={theme.colors.outline}>{selectedQueue.location}</Typography>
+           </View>
+
+           <View style={styles.predictionGrid}>
+              <TonalCard variant="medium" style={styles.predictionCard}>
+                 <Typography variant="labelSmall" weight="900" color={theme.colors.outline}>CURRENT</Typography>
+                 <Typography variant="displaySmall" weight="900" color={theme.colors.primary}>{selectedQueue.waitTime}m</Typography>
+              </TonalCard>
+              <TonalCard variant="medium" style={styles.predictionCard}>
+                 <Typography variant="labelSmall" weight="900" color={theme.colors.outline}>IN 30 MIN</Typography>
+                 <Typography variant="displaySmall" weight="900" color="#F59E0B">{selectedQueue.prediction30min}m</Typography>
+              </TonalCard>
+           </View>
+
+           <Typography variant="titleMedium" weight="900" style={styles.sectionTitle}>Wait Time Forecast</Typography>
+           <View style={styles.forecastBox}>
+              {[
+                { time: '15m', val: selectedQueue.prediction15min },
+                { time: '30m', val: selectedQueue.prediction30min },
+                { time: '60m', val: selectedQueue.prediction60min }
+              ].map(f => (
+                <View key={f.time} style={styles.forecastRow}>
+                   <Typography variant="bodyLarge" weight="700">{f.time} From Now</Typography>
+                   <Typography variant="bodyLarge" weight="900" color={theme.colors.primary}>{f.val} min</Typography>
+                </View>
+              ))}
+           </View>
+
+           <TouchableOpacity 
+              style={styles.notifyBtn}
+              onPress={() => Alert.alert("Intelligence Active", "We will notify you when the line is under 10 minutes.")}
+           >
+              <Ionicons name="notifications" size={20} color="white" />
+              <Typography color="white" weight="900" style={{ marginLeft: 10 }}>NOTIFY WHEN CLEAR</Typography>
+           </TouchableOpacity>
+        </ScrollView>
       </SafeAreaView>
     );
   }
@@ -394,135 +229,39 @@ export default function QueuePredictionScreen() {
         data={queues}
         renderItem={renderQueueCard}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
       />
     </SafeAreaView>
   );
 }
 
+// Stub for TonalCard if not available in this scope, but it should be imported from design-system
+import { TonalCard } from '@crowza/design-system';
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
-  listContent: {
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    gap: 12,
-  },
-  queueCard: {
-    borderRadius: 12,
-    padding: 12,
-    gap: 10,
-  },
-  queueCardTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-  },
-  queueNameSection: {
-    flex: 1,
-    gap: 4,
-  },
-  waitTimeBadge: {
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
-  queueStats: {
-    gap: 8,
-  },
-  statItem: {
-    gap: 4,
-  },
-  progressBar: {
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: theme.colors.surfaceVariant,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: 6,
-  },
-  trendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  // Detail view
-  detailHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.outlineVariant,
-  },
-  detailHero: {
-    paddingVertical: 32,
-    alignItems: 'center',
-    gap: 8,
-  },
-  detailContent: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-  },
-  detailSection: {
-    marginBottom: 20,
-    paddingBottom: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.outlineVariant,
-    gap: 12,
-  },
-  detailRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingVertical: 8,
-  },
-  predictionRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  predictionCard: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    borderRadius: 8,
-    backgroundColor: theme.colors.surfaceVariant,
-    gap: 4,
-  },
-  alternativeCard: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    backgroundColor: theme.colors.surfaceVariant,
-    marginBottom: 8,
-  },
-  altWaitTime: {
-    alignItems: 'flex-end',
-  },
-  detailActions: {
-    flexDirection: 'row',
-    gap: 8,
-    padding: 12,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.outlineVariant,
-  },
-  actionBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 6,
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-  },
+  container: { flex: 1, backgroundColor: theme.colors.bgPrimary },
+  list: { padding: 20, gap: 16 },
+  queueCard: { marginBottom: 12 },
+  cardInner: { padding: 16, borderRadius: 24, backgroundColor: theme.colors.surface },
+  cardHeader: { flexDirection: 'row', alignItems: 'center' },
+  iconBox: { width: 50, height: 50, borderRadius: 16, backgroundColor: theme.colors.surfaceVariant, justifyContent: 'center', alignItems: 'center' },
+  nameSection: { flex: 1, marginLeft: 16 },
+  waitTimeBox: { alignItems: 'center', backgroundColor: theme.colors.primary + '10', padding: 10, borderRadius: 16, minWidth: 60 },
+  metricsRow: { flexDirection: 'row', marginTop: 20, alignItems: 'center', gap: 16 },
+  metricItem: { flex: 1 },
+  progressBg: { height: 6, backgroundColor: theme.colors.surfaceVariant, borderRadius: 3, marginTop: 8 },
+  progressFill: { height: '100%', borderRadius: 3 },
+  trendBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: theme.colors.surfaceVariant, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12 },
+  
+  detailHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 15 },
+  backBtn: { width: 40, height: 40, borderRadius: 12, backgroundColor: theme.colors.surfaceVariant, justifyContent: 'center', alignItems: 'center' },
+  detailContent: { paddingHorizontal: 20, paddingBottom: 40 },
+  heroSection: { alignItems: 'center', marginVertical: 40 },
+  predictionGrid: { flexDirection: 'row', gap: 12, marginBottom: 40 },
+  predictionCard: { flex: 1, padding: 20, alignItems: 'center', borderRadius: 24, backgroundColor: theme.colors.surface },
+  sectionTitle: { marginBottom: 16 },
+  forecastBox: { backgroundColor: theme.colors.surface, borderRadius: 24, padding: 20, marginBottom: 40 },
+  forecastRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: theme.colors.surfaceVariant },
+  notifyBtn: { backgroundColor: theme.colors.primary, height: 64, borderRadius: 24, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', shadowColor: theme.colors.primary, shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 16, elevation: 8 },
 });

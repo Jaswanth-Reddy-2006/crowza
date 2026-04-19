@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, @typescript-eslint/no-require-imports */
 import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
@@ -10,18 +11,20 @@ import {
   Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { theme, TonalCard, Typography, SignatureButton } from '@crowza/design-system';
+import { theme, TonalCard, Typography, SignatureButton, EditorialHeader } from '@crowza/design-system';
 import { useAppDispatch, useAppSelector, useVenueId } from '../utils/hooks';
 import { fetchAllQueues, updateWaitEstimate } from '../store/slices/waitTimeManagementSlice';
+import { Ionicons } from '@expo/vector-icons';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const SCREEN_WIDTH = Dimensions.get('window').width;
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 function getWaitConfig(mins: number) {
-  if (mins >= 30) return { color: theme.colors.error, label: 'HIGH DELAY' };
-  if (mins >= 15) return { color: '#FF9800', label: 'MODERATE' };
-  return { color: theme.colors.primary, label: 'OPTIMAL' };
+  if (mins >= 30) return { color: '#EF4444', label: 'HIGH DELAY', bg: '#FEF2F2' };
+  if (mins >= 15) return { color: '#F97316', label: 'MODERATE', bg: '#FFF7ED' };
+  return { color: theme.colors.primary, label: 'OPTIMAL', bg: theme.colors.primaryContainer + '40' };
 }
+
+import { OperationalHeader } from '../components/OperationalHeader';
 
 export default function WaitTimeManagementScreen() {
   const dispatch = useAppDispatch();
@@ -29,7 +32,6 @@ export default function WaitTimeManagementScreen() {
   const venueId = useVenueId();
   const { queues } = useAppSelector((s) => s.waitTimeManagement);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [selectedQueue, setSelectedQueue] = useState<any>(null);
   const [overrideVal, setOverrideVal] = useState('');
   
@@ -46,12 +48,13 @@ export default function WaitTimeManagementScreen() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: insets.top + 20 }]}>
-        <View style={styles.header}>
-           <Typography variant="labelSmall" color={theme.colors.primary} style={{ letterSpacing: 2 }}>QUEUE OPS</Typography>
-           <Typography variant="headlineLarge" color={theme.colors.onSurface} weight="800">Wait Times</Typography>
-        </View>
+    <View style={[styles.container, { backgroundColor: theme.colors.bgPrimary, paddingTop: insets.top }]}>
+      <OperationalHeader
+        metadata="QUEUE LOGISTICS"
+        title="Wait Estimations"
+        subtitle="Monitor and adjust real-time wait times to optimize attendee flow and satisfaction."
+      />
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
 
         <Animated.View style={[styles.grid, { opacity: fadeAnim }]}>
            {queues.map((q) => {
@@ -60,46 +63,60 @@ export default function WaitTimeManagementScreen() {
 
              return (
                <View key={q.zoneId} style={styles.queueWrapper}>
-                 <TonalCard variant={isSelected ? "highest" : "medium"} style={{ ...styles.queueCard, ...(isSelected ? { borderColor: theme.colors.primary, borderWidth: 1 } : {}) }}>
+                 <TonalCard variant="medium" style={[styles.queueCard, isSelected && { borderColor: theme.colors.primary, borderWidth: 1, backgroundColor: '#FFF' }]}>
                     <View style={styles.cardHeader}>
-                       <View>
-                          <Typography variant="titleLarge" color={theme.colors.onSurface} style={styles.zoneName}>{q.zoneName}</Typography>
-                          <Typography variant="labelSmall" color={config.color}>{config.label}</Typography>
+                       <View style={{ flex: 1 }}>
+                          <Typography variant="titleLarge" weight="900" style={styles.zoneName}>{q.zoneName}</Typography>
+                          <View style={[styles.statusBadge, { backgroundColor: config.bg }]}>
+                             <Typography variant="labelSmall" color={config.color} weight="900">{config.label}</Typography>
+                          </View>
                        </View>
                        <View style={styles.mainTime}>
-                          <Typography variant="displaySmall" color={theme.colors.onSurface}>{q.estimatedWaitMins}m</Typography>
+                          <Typography variant="displaySmall" weight="900">{q.estimatedWaitMins}</Typography>
+                          <Typography variant="labelSmall" color={theme.colors.outline} weight="900">MINS</Typography>
                        </View>
                     </View>
 
-                    {/* Simple Waveform Trend */}
                     <View style={styles.trendRow}>
-                       {[0.4, 0.7, 0.5, 0.9, 0.6, 0.8, 0.3].map((h, i) => (
-                         <View key={i} style={[styles.trendBar, { height: h * 24, backgroundColor: config.color, opacity: 0.3 + (i * 0.1) }]} />
-                       ))}
-                       <Typography variant="labelSmall" color={theme.colors.outline} style={{ marginLeft: 8 }}>LIVE TREND</Typography>
+                       <View style={styles.trendVisual}>
+                          {[0.4, 0.7, 0.5, 0.9, 0.6, 0.8, 0.3, 0.5, 0.4].map((h, i) => (
+                            <View key={i} style={[styles.trendBar, { height: h * 24, backgroundColor: config.color, opacity: 0.2 + (i * 0.1) }]} />
+                          ))}
+                       </View>
+                       <Typography variant="labelSmall" color={theme.colors.outline} weight="700">LIVE PATIENCE TREND</Typography>
                     </View>
 
                     {isSelected ? (
                       <View style={styles.editSection}>
-                         <Typography variant="labelSmall" color={theme.colors.primary}>MANUAL OVERRIDE (MINS)</Typography>
+                         <Typography variant="labelSmall" color={theme.colors.primary} weight="900" style={{ marginBottom: 12 }}>REVISE ESTIMATE</Typography>
                          <TextInput 
                            style={styles.input}
                            value={overrideVal}
                            onChangeText={setOverrideVal}
                            keyboardType="numeric"
                            autoFocus
-                           placeholder="Enter mins"
-                           placeholderTextColor={theme.colors.outlineVariant}
+                           placeholder="0"
+                           placeholderTextColor={theme.colors.outline}
                          />
                          <View style={styles.editActions}>
-                            <SignatureButton label="UPDATE" onPress={() => handleUpdate(q.zoneId, parseInt(overrideVal, 10))} variant="primary" style={{ flex: 1 }} />
-                            <SignatureButton label="REDUCE 5m" onPress={() => handleUpdate(q.zoneId, Math.max(0, q.estimatedWaitMins - 5))} variant="secondary" style={{ flex: 1 }} />
-                            <SignatureButton label="CANCEL" onPress={() => setSelectedQueue(null)} variant="tertiary" style={{ flex: 1 }} />
+                            <TouchableOpacity style={styles.updateBtn} onPress={() => handleUpdate(q.zoneId, parseInt(overrideVal, 10))}>
+                               <Typography variant="labelSmall" color="white" weight="900">APPLY</Typography>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.quickActionBtn} onPress={() => handleUpdate(q.zoneId, Math.max(0, q.estimatedWaitMins - 5))}>
+                               <Typography variant="labelSmall" color={theme.colors.primary} weight="900">-5M</Typography>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.cancelBtn} onPress={() => setSelectedQueue(null)}>
+                               <Typography variant="labelSmall" color={theme.colors.outline} weight="900">CANCEL</Typography>
+                            </TouchableOpacity>
                          </View>
                       </View>
                     ) : (
-                      <TouchableOpacity style={styles.adjustBtn} onPress={() => { setSelectedQueue(q); setOverrideVal(String(q.estimatedWaitMins)); }}>
-                         <Typography variant="labelSmall" color={theme.colors.primary}>ADJUST ESTIMATE • REDUCE TIME</Typography>
+                      <TouchableOpacity 
+                        style={styles.adjustBtn} 
+                        onPress={() => { setSelectedQueue(q); setOverrideVal(String(q.estimatedWaitMins)); }}
+                      >
+                         <Typography variant="labelSmall" color={theme.colors.primary} weight="900">TAP TO MANUALLY ADJUST</Typography>
+                         <Ionicons name="create-outline" size={14} color={theme.colors.primary} />
                       </TouchableOpacity>
                     )}
                  </TonalCard>
@@ -109,16 +126,16 @@ export default function WaitTimeManagementScreen() {
         </Animated.View>
       </ScrollView>
 
-      {/* Stats Summary Bar */}
-      <View style={[styles.footer, { paddingBottom: insets.bottom + 16 }]}>
-         <TonalCard variant="high" style={styles.statsBar}>
+      <View style={[styles.footer, { paddingBottom: insets.bottom + 20 }]}>
+         <TonalCard variant="highest" style={styles.statsBar}>
             <View style={styles.statBox}>
-               <Typography variant="labelSmall" color={theme.colors.outline}>AVG WAIT</Typography>
-               <Typography variant="titleLarge" color={theme.colors.onSurface}>14m</Typography>
+               <Typography variant="labelSmall" color={theme.colors.outline} weight="900">VEHICLE INFLOW</Typography>
+               <Typography variant="titleLarge" weight="900">Low</Typography>
             </View>
+            <View style={styles.statBoxDivider} />
             <View style={styles.statBox}>
-               <Typography variant="labelSmall" color={theme.colors.outline}>TOTAL QUEUE</Typography>
-               <Typography variant="titleLarge" color={theme.colors.onSurface}>1.2k</Typography>
+               <Typography variant="labelSmall" color={theme.colors.outline} weight="900">SYSTEM AVG</Typography>
+               <Typography variant="titleLarge" weight="900">12m</Typography>
             </View>
          </TonalCard>
       </View>
@@ -128,42 +145,27 @@ export default function WaitTimeManagementScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  scroll: { paddingBottom: 140 },
-  header: { paddingHorizontal: 24, marginBottom: 32 },
-  grid: { paddingHorizontal: 16 },
+  scroll: { paddingBottom: 160 },
+  header: { paddingHorizontal: 20, marginBottom: 20, marginTop: 10 },
+  grid: { paddingHorizontal: 20 },
   queueWrapper: { marginBottom: 16 },
-  queueCard: { padding: 24, borderRadius: 32, gap: 20 },
-  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  zoneName: { fontWeight: '700' },
-  mainTime: { alignItems: 'flex-end' },
-  trendRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 4 },
-  trendBar: { width: 4, borderRadius: 2 },
-  adjustBtn: {
-    paddingVertical: 12,
-    alignItems: 'center',
-    borderTopWidth: 1,
-    borderColor: theme.colors.outlineVariant,
-    marginTop: 8,
-  },
-  editSection: { gap: 12, marginTop: 8 },
-  input: {
-    backgroundColor: theme.colors.surfaceContainer,
-    borderRadius: 12,
-    padding: 16,
-    color: theme.colors.onSurface,
-    fontSize: 20,
-    fontWeight: '700',
-    borderWidth: 1,
-    borderColor: theme.colors.outlineVariant,
-  },
-  editActions: { flexDirection: 'row', gap: 8 },
-  footer: { position: 'absolute', left: 16, right: 16, bottom: 0 },
-  statsBar: {
-    flexDirection: 'row',
-    padding: 20,
-    borderRadius: 24,
-    justifyContent: 'space-around',
-  },
-  statBox: { alignItems: 'center', gap: 4 },
+  queueCard: { padding: 24, borderRadius: 28, backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.surfaceVariant },
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 },
+  zoneName: { marginBottom: 6 },
+  statusBadge: { alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
+  mainTime: { alignItems: 'center', backgroundColor: theme.colors.background, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 20, borderWidth: 1, borderColor: theme.colors.surfaceVariant, minWidth: 80 },
+  trendRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 20 },
+  trendVisual: { flexDirection: 'row', alignItems: 'flex-end', gap: 3 },
+  trendBar: { width: 3, borderRadius: 2 },
+  adjustBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingTop: 16, borderTopWidth: 1, borderTopColor: theme.colors.surfaceVariant },
+  editSection: { marginTop: 8, paddingTop: 16, borderTopWidth: 1, borderTopColor: theme.colors.surfaceVariant },
+  input: { backgroundColor: theme.colors.background, borderRadius: 16, padding: 16, fontSize: 32, fontWeight: '900', color: theme.colors.onSurface, textAlign: 'center', borderWidth: 1, borderColor: theme.colors.primary, marginBottom: 20 },
+  editActions: { flexDirection: 'row', gap: 10 },
+  updateBtn: { flex: 2, backgroundColor: theme.colors.primary, paddingVertical: 16, borderRadius: 12, alignItems: 'center' },
+  quickActionBtn: { flex: 1, backgroundColor: theme.colors.surfaceVariant, paddingVertical: 16, borderRadius: 12, alignItems: 'center', borderWidth: 1, borderColor: theme.colors.outlineVariant },
+  cancelBtn: { flex: 1, paddingVertical: 16, borderRadius: 12, alignItems: 'center' },
+  footer: { position: 'absolute', left: 20, right: 20, bottom: 0 },
+  statsBar: { flexDirection: 'row', padding: 24, borderRadius: 32, backgroundColor: theme.colors.surface, elevation: 12, shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.1, shadowRadius: 16 },
+  statBox: { flex: 1, alignItems: 'center' },
+  statBoxDivider: { width: 1, height: 32, backgroundColor: theme.colors.surfaceVariant },
 });
-

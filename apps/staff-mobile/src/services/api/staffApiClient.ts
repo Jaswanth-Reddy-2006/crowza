@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, @typescript-eslint/no-require-imports */
 import axios from 'axios';
 import { store } from '../../store/store';
 import { logoutStaff } from '../../store/slices/staffAuthSlice';

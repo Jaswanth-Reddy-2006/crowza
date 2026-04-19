@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, @typescript-eslint/no-require-imports, @typescript-eslint/ban-ts-comment */
 /**
  * Advanced A* Pathfinding Engine for Indoor Navigation
  * Provides turn-by-turn navigation, seat-level accuracy, and heat map routing

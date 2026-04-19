@@ -1,10 +1,17 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-require-imports, @typescript-eslint/ban-ts-comment */
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import attendeeApiClient from '../../services/api/attendeeApiClient';
 import { User } from '@crowza/shared';
 
+export interface UserPreferences {
+  theme?: 'light' | 'dark' | 'system';
+  notifications?: boolean;
+  language?: string;
+  [key: string]: unknown;
+}
+
 export interface UserProfile extends User {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  preferences: any;
+  preferences: UserPreferences;
   savedLocations: string[];
 }
 
@@ -20,16 +27,15 @@ const initialState: UserState = {
   error: null,
 };
 
-export const fetchUserProfile = createAsyncThunk(
+export const fetchUserProfile = createAsyncThunk<UserProfile, void, { rejectValue: string }>(
   'user/fetchUserProfile',
   async (_, { rejectWithValue }) => {
     try {
       const response = await attendeeApiClient.get('/auth/user');
       return response.data.data.user;
     } catch (error: unknown) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const anyError = error as any;
-      return rejectWithValue(anyError.response?.data?.message || 'Failed to fetch profile');
+      const message = error instanceof Error ? error.message : 'Failed to fetch profile';
+      return rejectWithValue(message);
     }
   }
 );
@@ -41,7 +47,7 @@ const userSlice = createSlice({
     setProfile: (state, action: PayloadAction<UserProfile>) => {
       state.profile = action.payload;
     },
-    updatePreferences: (state, action: PayloadAction<Record<string, unknown>>) => {
+    updatePreferences: (state, action: PayloadAction<UserPreferences>) => {
       if (state.profile) {
         state.profile.preferences = { ...state.profile.preferences, ...action.payload };
       }
@@ -54,7 +60,7 @@ const userSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchUserProfile.fulfilled, (state, action) => {
+      .addCase(fetchUserProfile.fulfilled, (state, action: PayloadAction<UserProfile>) => {
         state.profile = action.payload;
       });
   },
@@ -62,3 +68,4 @@ const userSlice = createSlice({
 
 export const { setProfile, updatePreferences, addSavedLocation } = userSlice.actions;
 export default userSlice.reducer;
+

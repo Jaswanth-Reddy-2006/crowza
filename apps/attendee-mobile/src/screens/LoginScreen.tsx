@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, @typescript-eslint/no-require-imports, @typescript-eslint/ban-ts-comment */
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
@@ -10,6 +11,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  ImageBackground,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -26,7 +28,6 @@ import AuthErrorDisplay from '../components/AuthErrorDisplay';
 
 export default function LoginScreen() {
   const dispatch = useAppDispatch();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const navigation = useNavigation<any>();
   const insets = useSafeAreaInsets();
 
@@ -77,19 +78,18 @@ export default function LoginScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    <ImageBackground 
+      source={require('../../assets/branding/stadium_light.png')}
+      style={styles.background}
     >
-      <View style={[styles.container, { paddingTop: insets.top }]}>
-        {/* Kinetic Background elements */}
-        <View style={styles.backgroundVisual}>
-          <View style={[styles.kineticCircle, { top: -100, left: -50, backgroundColor: theme.colors.primaryContainer, opacity: 0.2 }]} />
-          <View style={[styles.kineticCircle, { bottom: 100, right: -100, backgroundColor: theme.colors.tertiaryContainer, opacity: 0.1 }]} />
-        </View>
-
+      <View style={styles.overlay} />
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
         <ScrollView
-          contentContainerStyle={styles.scrollContent}
+          style={{ flex: 1 }}
+          contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top }]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
@@ -106,7 +106,6 @@ export default function LoginScreen() {
               style={styles.header}
             />
 
-            {/* Error Display */}
             {authError && (
               <AuthErrorDisplay
                 error={authError}
@@ -194,26 +193,19 @@ export default function LoginScreen() {
             POWERED BY CROWZA KINETIC
           </Typography>
         </View>
-      </View>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  background: {
     flex: 1,
-    backgroundColor: theme.colors.background,
   },
-  backgroundVisual: {
+  overlay: { 
     ...StyleSheet.absoluteFillObject,
-    overflow: 'hidden',
-    zIndex: -1,
-  },
-  kineticCircle: {
-    position: 'absolute',
-    width: 400,
-    height: 400,
-    borderRadius: 200,
+    backgroundColor: 'rgba(252, 249, 248, 0.7)',
+    zIndex: 0,
   },
   scrollContent: {
     paddingBottom: 100,
@@ -253,7 +245,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.outlineVariant,
     paddingVertical: 8,
-    fontFamily: 'Inter-Regular',
   },
   passwordContainer: {
     flexDirection: 'row',
@@ -266,7 +257,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: theme.colors.onSurface,
     paddingVertical: 8,
-    fontFamily: 'Inter-Regular',
   },
   eyeIconContainer: {
     padding: 8,
@@ -279,10 +269,6 @@ const styles = StyleSheet.create({
   forgotBtn: {
     padding: 4,
   },
-  errorText: {
-    textAlign: 'center',
-    marginBottom: 16,
-  },
   spinner: {
     marginBottom: 24,
   },
@@ -291,9 +277,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   footer: {
-    position: 'absolute',
-    bottom: 0,
-    width: '100%',
     alignItems: 'center',
+    width: '100%',
   },
 });

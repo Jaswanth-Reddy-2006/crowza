@@ -1,11 +1,19 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-require-imports, @typescript-eslint/ban-ts-comment */
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { HeatMapData, ZoneOccupancy } from '@crowza/shared';
+
+export interface OccupancyAlert {
+  id: string;
+  zoneId: string;
+  level: 'low' | 'medium' | 'high' | 'critical';
+  message: string;
+  timestamp: string;
+}
 
 export interface OccupancyState {
   zones: Record<string, ZoneOccupancy>;
   heatmap: HeatMapData | null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  alerts: any[];
+  alerts: OccupancyAlert[];
   loading: boolean;
 }
 
@@ -26,7 +34,7 @@ const occupancySlice = createSlice({
     setHeatmap: (state, action: PayloadAction<HeatMapData>) => {
       state.heatmap = action.payload;
     },
-    addAlert: (state, action: PayloadAction<Record<string, unknown>>) => {
+    addAlert: (state, action: PayloadAction<OccupancyAlert>) => {
       state.alerts.push(action.payload);
     },
     clearAlerts: (state) => {
@@ -40,3 +48,4 @@ const occupancySlice = createSlice({
 
 export const { setZoneOccupancy, setHeatmap, addAlert, clearAlerts, setLoading } = occupancySlice.actions;
 export default occupancySlice.reducer;
+

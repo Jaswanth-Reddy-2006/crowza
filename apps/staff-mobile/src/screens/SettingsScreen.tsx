@@ -1,154 +1,139 @@
-import React, { useEffect, useRef } from 'react';
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, @typescript-eslint/no-require-imports */
+import React from 'react';
 import {
   View,
   StyleSheet,
   ScrollView,
-  Animated,
-  Dimensions,
-  Platform,
   TouchableOpacity,
+  Image,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { theme, TonalCard, Typography, SignatureButton } from '@crowza/design-system';
-import { useAppDispatch, useAppSelector } from '../utils/hooks';
-import { logoutStaff } from '../store/slices/staffAuthSlice';
+import { theme, Typography, TonalCard, SignatureButton, EditorialHeader } from '@crowza/design-system';
 import { Ionicons } from '@expo/vector-icons';
+import { useAppDispatch, useAppSelector } from '../utils/hooks';
+import { logoutStaff, leaveEvent } from '../store/slices/staffAuthSlice';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const SCREEN_WIDTH = Dimensions.get('window').width;
-
-const EVENT_HISTORY = [
-  { id: '1', name: 'Champions League Final 2026', date: 'June 12, 2026', role: 'Chief Marshal', status: 'COMPLETED' },
-  { id: '2', name: 'Global Tech Summit', date: 'May 28, 2026', role: 'Zone Supervisor', status: 'COMPLETED' },
-  { id: '3', name: 'The Weeknd World Tour', date: 'April 15, 2026', role: 'Crowd Manager', status: 'COMPLETED' },
-  { id: '4', name: 'Corporate Expo', date: 'March 10, 2026', role: 'Marshal', status: 'COMPLETED' },
-];
-
-export default function ProfileScreen({ navigation }: { navigation: any }) {
-  const dispatch = useAppDispatch();
+export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
-  const staff = useAppSelector((s) => s.staffAuth.staff);
-
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.timing(fadeAnim, { toValue: 1, duration: 800, useNativeDriver: Platform.OS !== 'web' }).start();
-  }, []);
+  const dispatch = useAppDispatch();
+  const { staff, joinedEventId } = useAppSelector((s) => s.staffAuth);
 
   const handleLogout = () => {
     dispatch(logoutStaff());
-    navigation.replace('StaffLogin');
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: insets.top + 20 }]}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-              <View style={[styles.liveDot, { backgroundColor: theme.colors.secondary }]} />
-              <Typography variant="labelSmall" color={theme.colors.secondary} style={{ letterSpacing: 3 }}>COMMANDER IDENTITY</Typography>
+            <EditorialHeader
+              metadata="PROFILE"
+              title="Team Member Detail"
+              subtitle="Manage your professional identity and review your service record."
+            />
+        </View>
+
+        <View style={styles.profileHero}>
+           <View style={styles.avatarContainer}>
+              <View style={styles.avatarPlaceholder}>
+                 <Typography variant="displaySmall" color="white" weight="900">
+                    {staff?.displayName?.charAt(0) || 'S'}
+                 </Typography>
+              </View>
+              <TouchableOpacity style={styles.editAvatarBtn}>
+                 <Ionicons name="camera" size={16} color="white" />
+              </TouchableOpacity>
            </View>
-           <Typography variant="headlineLarge" color={theme.colors.onSurface} weight="800">Operational Profile</Typography>
+           <View style={styles.profileInfo}>
+              <Typography variant="headlineSmall" weight="900">{staff?.displayName || 'Staff Member'}</Typography>
+              <Typography variant="bodyMedium" color={theme.colors.outline}>{staff?.email || 'member@crowza.com'}</Typography>
+              <View style={styles.roleBadge}>
+                 <Typography variant="labelSmall" color={theme.colors.primary} weight="900">VERIFIED OPERATOR</Typography>
+              </View>
+           </View>
         </View>
 
-        {/* Hero Identity Profile */}
-        <Animated.View style={[styles.profileSection, { opacity: fadeAnim }]}>
-           <TonalCard variant="high" style={styles.profileCard}>
-               <View style={styles.profileHead}>
-                  <View style={styles.avatar}>
-                     <Typography variant="headlineMedium" color={theme.colors.onPrimary}>{(staff?.displayName?.[0] || 'S').toUpperCase()}</Typography>
-                  </View>
-                  <View style={{ flex: 1 }}>
-                     <Typography variant="titleLarge" color={theme.colors.onSurface} weight="800">{staff?.displayName || 'Commander Staff'}</Typography>
-                     <Typography variant="labelSmall" color={theme.colors.primary} weight="700">{staff?.role || 'OPERATIONS MANAGER'}</Typography>
-                  </View>
-                  <TouchableOpacity style={styles.editBtn}>
-                     <Ionicons name="pencil" size={16} color={theme.colors.primary} />
-                  </TouchableOpacity>
-               </View>
+        <Typography variant="titleLarge" weight="900" style={styles.sectionTitle}>Expertise</Typography>
+        <TonalCard variant="medium" style={styles.expertiseCard}>
+           <View style={styles.chipRow}>
+              {['Crowd Control', 'Incident Response', 'VIP Support', 'Logistics'].map(skill => (
+                <View key={skill} style={styles.skillChip}>
+                   <Typography variant="labelSmall" weight="700">{skill}</Typography>
+                </View>
+              ))}
+           </View>
+        </TonalCard>
 
-               <View style={styles.statsGrid}>
-                  <View style={styles.statBox}>
-                     <Typography variant="titleLarge" color={theme.colors.onSurface} weight="800">124</Typography>
-                     <Typography variant="labelSmall" color={theme.colors.outline} weight="600">INCIDENTS</Typography>
-                  </View>
-                  <View style={styles.statDivider} />
-                  <View style={styles.statBox}>
-                     <Typography variant="titleLarge" color={theme.colors.onSurface} weight="800">28</Typography>
-                     <Typography variant="labelSmall" color={theme.colors.outline} weight="600">SHIFTS</Typography>
-                  </View>
-                  <View style={styles.statDivider} />
-                  <View style={styles.statBox}>
-                     <Typography variant="titleLarge" color={theme.colors.primary} weight="800">4.9</Typography>
-                     <Typography variant="labelSmall" color={theme.colors.outline} weight="600">RATING</Typography>
-                  </View>
-               </View>
+        <Typography variant="titleLarge" weight="900" style={styles.sectionTitle}>Service Record</Typography>
+        <View style={styles.recordGrid}>
+           <TonalCard variant="low" style={styles.recordItem}>
+              <Typography variant="headlineSmall" weight="900" color={theme.colors.primary}>142</Typography>
+              <Typography variant="labelSmall" color={theme.colors.outline}>Hours Worked</Typography>
            </TonalCard>
-        </Animated.View>
-
-        {/* Event History Section */}
-        <View style={styles.section}>
-            <Typography variant="labelSmall" color={theme.colors.outline} style={styles.sectionLabel}>EVENT HISTORY</Typography>
-            <TonalCard variant="medium" style={styles.historyList}>
-               {EVENT_HISTORY.map((event, i) => (
-                 <View key={event.id} style={[styles.historyRow, i === EVENT_HISTORY.length - 1 && { borderBottomWidth: 0 }]}>
-                    <View style={styles.historyIcon}>
-                       <Ionicons name="calendar-outline" size={20} color={theme.colors.primary} />
-                    </View>
-                    <View style={{ flex: 1 }}>
-                       <Typography variant="titleSmall" color={theme.colors.onSurface} weight="700">{event.name}</Typography>
-                       <Typography variant="labelSmall" color={theme.colors.outline}>{event.date} • {event.role}</Typography>
-                    </View>
-                    <View style={styles.statusBadge}>
-                       <Typography variant="labelSmall" color={theme.colors.primary} weight="700">DONE</Typography>
-                    </View>
-                 </View>
-               ))}
-            </TonalCard>
+           <TonalCard variant="low" style={styles.recordItem}>
+              <Typography variant="headlineSmall" weight="900" color={theme.colors.secondary}>4.9</Typography>
+              <Typography variant="labelSmall" color={theme.colors.outline}>Avg Rating</Typography>
+           </TonalCard>
         </View>
 
-        {/* Operational Excellence Score */}
-        <View style={styles.section}>
-            <Typography variant="labelSmall" color={theme.colors.outline} style={styles.sectionLabel}>PERFORMANCE METRICS</Typography>
-            <TonalCard variant="low" style={styles.metricsCard}>
-               <View style={styles.metricRow}>
-                  <Typography variant="bodyLarge" color={theme.colors.onSurface}>Response Velocity</Typography>
-                  <Typography variant="titleLarge" color={theme.colors.primary} weight="800">Top 5%</Typography>
-               </View>
-               <View style={styles.progressBarContainer}>
-                  <View style={[styles.progressBar, { width: '92%', backgroundColor: theme.colors.primary }]} />
-               </View>
-            </TonalCard>
+        <View style={styles.actionsBox}>
+           <TouchableOpacity style={styles.actionItem}>
+              <Ionicons name="shield-outline" size={20} color={theme.colors.onSurface} />
+              <Typography variant="bodyLarge" weight="700" style={{ flex: 1, marginLeft: 16 }}>Security Settings</Typography>
+              <Ionicons name="chevron-forward" size={18} color={theme.colors.outlineVariant} />
+           </TouchableOpacity>
+           <View style={styles.actionDivider} />
+           <TouchableOpacity style={styles.actionItem}>
+              <Ionicons name="notifications-outline" size={20} color={theme.colors.onSurface} />
+              <Typography variant="bodyLarge" weight="700" style={{ flex: 1, marginLeft: 16 }}>Notifications</Typography>
+              <Ionicons name="chevron-forward" size={18} color={theme.colors.outlineVariant} />
+           </TouchableOpacity>
+           <View style={styles.actionDivider} />
+           {joinedEventId && (
+              <>
+                <TouchableOpacity 
+                   style={[styles.actionItem, { marginTop: 4 }]} 
+                   onPress={() => dispatch(leaveEvent())}
+                >
+                   <Ionicons name="exit-outline" size={20} color={theme.colors.primary} />
+                   <Typography variant="bodyLarge" weight="900" color={theme.colors.primary} style={{ flex: 1, marginLeft: 16 }}>EXIT FROM EVENT</Typography>
+                   <Ionicons name="chevron-forward" size={18} color={theme.colors.primary} />
+                </TouchableOpacity>
+                <View style={styles.actionDivider} />
+              </>
+            )}
+           <TouchableOpacity style={[styles.actionItem, { marginTop: 12 }]} onPress={handleLogout}>
+              <Ionicons name="log-out-outline" size={20} color={theme.colors.error} />
+              <Typography variant="bodyLarge" weight="700" color={theme.colors.error} style={{ flex: 1, marginLeft: 16 }}>Sign Out</Typography>
+           </TouchableOpacity>
         </View>
 
-        <View style={[styles.section, { marginTop: 16, marginBottom: 80 }]}>
-           <SignatureButton label="SIGN OUT COMMANDER" onPress={handleLogout} variant="secondary" />
-        </View>
+        <Typography variant="bodySmall" color={theme.colors.outline} style={styles.version}>
+           Crowza Staff v2.1.0 (PRO)
+        </Typography>
       </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  scroll: { paddingBottom: 100 },
-  header: { paddingHorizontal: 24, marginBottom: 24 },
-  profileSection: { paddingHorizontal: 16, marginBottom: 32 },
-  profileCard: { padding: 24, borderRadius: 32, gap: 24 },
-  profileHead: { flexDirection: 'row', gap: 20, alignItems: 'center' },
-  avatar: { width: 72, height: 72, borderRadius: 24, backgroundColor: theme.colors.primary, justifyContent: 'center', alignItems: 'center' },
-  editBtn: { width: 32, height: 32, borderRadius: 16, backgroundColor: `${theme.colors.primary}15`, justifyContent: 'center', alignItems: 'center' },
-  statsGrid: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center', paddingVertical: 12, borderTopWidth: 1, borderBottomWidth: 1, borderColor: theme.colors.outlineVariant },
-  statBox: { alignItems: 'center', gap: 4 },
-  statDivider: { width: 1, height: 30, backgroundColor: theme.colors.outlineVariant },
-  section: { paddingHorizontal: 20, marginBottom: 32 },
-  sectionLabel: { marginBottom: 16, letterSpacing: 1, fontWeight: '700' },
-  historyList: { borderRadius: 32, padding: 8 },
-  historyRow: { flexDirection: 'row', alignItems: 'center', padding: 20, gap: 16, borderBottomWidth: 1, borderColor: theme.colors.outlineVariant },
-  historyIcon: { width: 44, height: 44, borderRadius: 14, backgroundColor: theme.colors.surfaceContainer, justifyContent: 'center', alignItems: 'center' },
-  statusBadge: { backgroundColor: `${theme.colors.primary}15`, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
-  metricsCard: { padding: 24, borderRadius: 24, gap: 16 },
-  metricRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  progressBarContainer: { height: 6, backgroundColor: theme.colors.surfaceContainerHigh, borderRadius: 3 },
-  progressBar: { height: '100%', borderRadius: 3 },
+  container: { flex: 1, backgroundColor: theme.colors.bgPrimary },
+  scrollContent: { paddingHorizontal: 24, paddingBottom: 60 },
+  header: { marginBottom: 32, marginTop: 10 },
+  profileHero: { flexDirection: 'row', alignItems: 'center', marginBottom: 40 },
+  avatarContainer: { position: 'relative' },
+  avatarPlaceholder: { width: 80, height: 80, borderRadius: 32, backgroundColor: theme.colors.primary, justifyContent: 'center', alignItems: 'center' },
+  editAvatarBtn: { position: 'absolute', right: -4, bottom: -4, width: 28, height: 28, borderRadius: 14, backgroundColor: '#1C1B1B', justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: theme.colors.background },
+  profileInfo: { marginLeft: 20, flex: 1 },
+  roleBadge: { backgroundColor: '#FFF7ED', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6, alignSelf: 'flex-start', marginTop: 8 },
+  sectionTitle: { marginBottom: 16 },
+  expertiseCard: { padding: 20, borderRadius: 24, marginBottom: 32, backgroundColor: theme.colors.surface },
+  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  skillChip: { backgroundColor: theme.colors.background, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, borderWidth: 1, borderColor: theme.colors.outlineVariant },
+  recordGrid: { flexDirection: 'row', gap: 16, marginBottom: 40 },
+  recordItem: { flex: 1, padding: 20, borderRadius: 24, alignItems: 'center', backgroundColor: theme.colors.surface },
+  actionsBox: { backgroundColor: theme.colors.surface, borderRadius: 28, padding: 16, marginBottom: 32 },
+  actionItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: 14, paddingHorizontal: 8 },
+  actionDivider: { height: 1, backgroundColor: theme.colors.surfaceVariant, marginHorizontal: 8 },
+  version: { textAlign: 'center', opacity: 0.5 },
 });

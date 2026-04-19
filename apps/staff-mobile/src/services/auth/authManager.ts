@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, @typescript-eslint/no-require-imports */
 import { store } from '../../store/store';
 import { logoutStaff } from '../../store/slices/staffAuthSlice';
 import { tokenManager } from './tokenManager';

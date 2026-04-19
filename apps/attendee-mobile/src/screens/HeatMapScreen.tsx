@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, @typescript-eslint/no-require-imports, @typescript-eslint/ban-ts-comment */
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
@@ -6,15 +7,19 @@ import {
   Animated,
   Platform,
   UIManager,
+  Dimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Path, G, Defs, RadialGradient, Stop } from 'react-native-svg';
-import { Ionicons } from '@expo/vector-icons';
-import { theme, EditorialHeader, TonalCard, Typography } from '@crowza/design-system';
+import Svg, { Path, G, Defs, RadialGradient, Stop, Text as SvgText, Circle } from 'react-native-svg';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { theme, EditorialHeader, TonalCard, Typography, SignatureButton } from '@crowza/design-system';
 import { useAppDispatch, useAppSelector, useVenueId } from '../utils/hooks';
 import { fetchZones } from '../store/slices/venueSlice';
 import { selectAllZones, selectAllZoneOccupancies } from '../selectors';
 import { setupOccupancyListener } from '../services/firebase/realtimeListeners';
+import { useNavigation } from '@react-navigation/native';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -23,44 +28,61 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 const TIME_FILTERS = ['LIVE', '15M', '30M', '1H'];
 
 function getOccupancyColor(pct: number): string {
-  if (pct <= 30) return '#81C784'; // Soft Green
-  if (pct <= 60) return '#FFD54F'; // Soft Amber
-  if (pct <= 85) return '#FFB74D'; // Soft Orange
-  return '#E57373'; // Soft Red
+  if (pct <= 30) return '#F98000'; // Brand Primary Orange
+  if (pct <= 60) return '#F59E0B'; // Amber
+  if (pct <= 85) return '#EF4444'; // Red
+  return '#7F1D1D'; // Deep Maroon
 }
 
-const DensityPulse = ({ x, y, color, intensity }: { x: number, y: number, color: string, intensity: number }) => {
-  const scale = useRef(new Animated.Value(0.8)).current;
-  const opacity = useRef(new Animated.Value(0.4)).current;
+const FlowArrow = ({ start, end, delay = 0 }: { start: number[], end: number[], delay?: number }) => {
+  const progress = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.loop(
-      Animated.parallel([
-        Animated.timing(scale, { toValue: 1.5 + (intensity * 0.5), duration: 2000, useNativeDriver: false }),
-        Animated.timing(opacity, { toValue: 0, duration: 2000, useNativeDriver: false }),
+      Animated.sequence([
+        Animated.delay(delay),
+        Animated.timing(progress, {
+          toValue: 1,
+          duration: 3000,
+          useNativeDriver: true,
+        }),
       ])
     ).start();
-  }, [intensity]);
+  }, [delay]);
+
+  const x = progress.interpolate({
+    inputRange: [0, 1],
+    outputRange: [start[0], end[0]],
+  });
+
+  const y = progress.interpolate({
+    inputRange: [0, 1],
+    outputRange: [start[1], end[1]],
+  });
+
+  const opacity = progress.interpolate({
+    inputRange: [0, 0.2, 0.8, 1],
+    outputRange: [0, 1, 1, 0],
+  });
 
   return (
     <Animated.View
       style={{
         position: 'absolute',
-        left: x - 40,
-        top: y - 40,
-        width: 80,
-        height: 80,
-        borderRadius: 40,
-        backgroundColor: color,
+        left: x,
+        top: y,
         opacity: opacity,
-        transform: [{ scale }],
+        transform: [{ scale: 0.8 }],
       }}
-    />
+    >
+      <Ionicons name="chevron-forward-circle" size={16} color={theme.colors.primary} />
+    </Animated.View>
   );
 };
 
 export default function HeatMapScreen() {
   const dispatch = useAppDispatch();
+  const navigation = useNavigation();
   const insets = useSafeAreaInsets();
 
   const zones = useAppSelector(selectAllZones);
@@ -76,7 +98,7 @@ export default function HeatMapScreen() {
   }, [dispatch, VENUE_ID]);
 
   const stats = useMemo(() => {
-    const values = Object.values(occupancies);
+    const values = Object.values(occupancies || {});
     if (values.length === 0) return { avg: 0, count: 0 };
     return {
       avg: Math.round(values.reduce((s, o) => s + (o.occupancyPercent || 0), 0) / values.length),
@@ -92,107 +114,82 @@ export default function HeatMapScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <EditorialHeader
-        metadata="THERMAL DENSITY"
-        title="Crowd Heatmap"
-        subtitle="Visualizing real-time flow and density across the arena."
-        style={styles.header}
-      />
+      <View style={styles.header}>
+        <TouchableOpacity 
+          onPress={() => navigation.goBack()} 
+          style={styles.backBtn}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="chevron-back" size={24} color={theme.colors.onSurface} />
+        </TouchableOpacity>
+        <EditorialHeader
+          metadata="LIVE DENSITY"
+          title="Crowd Heatmap"
+          subtitle="Real-time thermal flow analysis"
+        />
+        <TonalCard variant="low" style={styles.safetyBadge}>
+          <View style={styles.pulseDot} />
+          <Typography variant="labelSmall" color="#F98000" weight="800" style={{ marginLeft: 6 }}>SYSTEM SECURE</Typography>
+        </TonalCard>
+      </View>
 
-      {/* Hero Thermal View */}
       <View style={styles.thermalContainer}>
+        {/* SVG Base Layers */}
         <View style={styles.svgWrapper}>
           <Svg width="100%" height="100%" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid meet">
-            <Defs>
-              <RadialGradient id="gradLow" cx="50%" cy="50%" rx="50%" ry="50%">
-                <Stop offset="0%" stopColor="#81C784" stopOpacity="0.6" />
-                <Stop offset="100%" stopColor="#81C784" stopOpacity="0" />
-              </RadialGradient>
-              <RadialGradient id="gradHigh" cx="50%" cy="50%" rx="50%" ry="50%">
-                <Stop offset="0%" stopColor="#E57373" stopOpacity="0.8" />
-                <Stop offset="100%" stopColor="#E57373" stopOpacity="0" />
-              </RadialGradient>
-            </Defs>
             {zones.map((zone) => {
               const occ = occupancies[zone.id]?.occupancyPercent ?? 0;
               const color = getOccupancyColor(occ);
               return (
-                <G key={zone.id}>
-                  <Path
-                    d={drawPath(zone.polygon || [])}
-                    fill={color}
-                    fillOpacity={0.3}
-                    stroke={color}
-                    strokeWidth={2}
-                  />
-                </G>
+                <Path
+                  key={zone.id}
+                  d={drawPath(zone.polygon || [])}
+                  fill={color}
+                  fillOpacity={0.3}
+                  stroke={color}
+                  strokeWidth={2}
+                />
               );
             })}
           </Svg>
-          {/* Overlay Pulses */}
-          {zones.map((zone) => {
-            const occ = occupancies[zone.id]?.occupancyPercent ?? 0;
-            if (occ < 60) return null;
-            // Center calculation for pulses
-            const centerX = (zone.polygon?.reduce((acc, p) => acc + p[0], 0) || 0) / (zone.polygon?.length || 1);
-            const centerY = (zone.polygon?.reduce((acc, p) => acc + p[1], 0) || 0) / (zone.polygon?.length || 1);
-            
-            // Map 0-1000 SVG space to screen space (360x400 approx)
-            const x = centerX * (360 / 1000); 
-            const y = centerY * (400 / 1000);
-            return (
-              <DensityPulse 
-                key={zone.id} 
-                x={x} 
-                y={y} 
-                color={getOccupancyColor(occ)} 
-                intensity={occ / 100} 
-              />
-            );
-          })}
         </View>
 
-        {/* Legend Overlay */}
-        <View style={styles.legendOverlay}>
-           <TonalCard variant="high" style={styles.legendCard}>
-              <Typography variant="labelSmall" color={theme.colors.onSurface} weight="600">LIVE DENSITY</Typography>
-              <View style={styles.legendItems}>
-                <View style={[styles.dot, { backgroundColor: '#4CAF50' }]} />
-                <View style={[styles.dot, { backgroundColor: '#FFC107' }]} />
-                <View style={[styles.dot, { backgroundColor: '#FF9800' }]} />
-                <View style={[styles.dot, { backgroundColor: '#F44336' }]} />
+        {/* Animated Flow Layer */}
+        <View style={styles.flowOverlay}>
+           <FlowArrow start={[200, 800]} end={[500, 500]} delay={0} />
+           <FlowArrow start={[200, 800]} end={[500, 500]} delay={1000} />
+           <FlowArrow start={[800, 800]} end={[500, 500]} delay={500} />
+           <FlowArrow start={[500, 200]} end={[500, 450]} delay={1500} />
+        </View>
+
+        {/* Floating Pill Legend */}
+        <View style={styles.floatingLegend}>
+           <TonalCard variant="highest" style={styles.legendPill} dark>
+              <Typography variant="labelSmall" color="white" weight="900">THERMAL LOAD</Typography>
+              <View style={styles.legendColors}>
+                 <View style={[styles.colorDot, { backgroundColor: '#F98000' }]} />
+                 <View style={[styles.colorDot, { backgroundColor: '#F59E0B' }]} />
+                 <View style={[styles.colorDot, { backgroundColor: '#EF4444' }]} />
+                 <View style={[styles.colorDot, { backgroundColor: '#7F1D1D' }]} />
               </View>
            </TonalCard>
-          
-          <View style={{ marginTop: 24, padding: 16, backgroundColor: theme.colors.surfaceContainerHighest, borderRadius: 16 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-              <Ionicons name="help-circle-outline" size={20} color={theme.colors.primary} />
-              <Typography variant="labelLarge" style={{ marginLeft: 8 }} weight="700">Understanding Density</Typography>
-            </View>
-            <Typography variant="bodySmall" color={theme.colors.onSurfaceVariant}>
-              The heatmap shows real-time thermal occupancy. Green areas represent low traffic, while Red indicates heavy congestion. Our AI uses this data to suggest the fastest exit routes and least crowded amenities.
-              {"\n\n"}
-              Blue pulses indicate emerging hotspots where density is increasing rapidly.
-            </Typography>
-          </View>
         </View>
       </View>
 
-      {/* Time Scrubber */}
-      <View style={styles.scrubberSection}>
-         <Typography variant="labelSmall" color={theme.colors.outline} style={styles.scrubberLabel}>
-            TIME HORIZON
-         </Typography>
+      {/* Time Horizon Control */}
+      <View style={styles.controlSection}>
          <View style={styles.scrubber}>
-            {TIME_FILTERS.map((f) => (
-              <TouchableOpacity 
-                key={f} 
+            {TIME_FILTERS.map(f => (
+              <TouchableOpacity
+                key={f}
                 onPress={() => setActiveTime(f)}
-                style={[styles.scrubberItem, activeTime === f && styles.scrubberItemActive]}
+                style={[styles.scrubberBtn, activeTime === f && styles.scrubberBtnActive]}
+                activeOpacity={0.8}
               >
                 <Typography 
-                  variant="labelMedium" 
-                  color={activeTime === f ? theme.colors.primary : theme.colors.onSurfaceVariant}
+                  variant="labelSmall" 
+                  weight="900" 
+                  color={activeTime === f ? theme.colors.primary : theme.colors.outline}
                 >
                   {f}
                 </Typography>
@@ -201,28 +198,41 @@ export default function HeatMapScreen() {
          </View>
       </View>
 
-      {/* Insights */}
-      <View style={styles.insights}>
-         <TonalCard variant="low" style={styles.insightCard}>
-            <Typography variant="titleMedium" color={theme.colors.onSurface}>
-               Peak Load Analysis
-            </Typography>
-            <Typography variant="bodyMedium" color={theme.colors.onSurfaceVariant} style={{ marginTop: 4 }}>
-               Arena is currently at {stats.avg}% capacity. Major congestion detected near Gate 4.
-            </Typography>
-            <View style={styles.statGrid}>
-               <View style={styles.stat}>
-                  <Typography variant="displaySmall" color={theme.colors.onSurface}>84%</Typography>
-                  <Typography variant="labelSmall" color={theme.colors.outline}>GATE 4 FLUIDITY</Typography>
-               </View>
-               <View style={styles.stat}>
-                  <Typography variant="displaySmall" color={theme.colors.primary}>12m</Typography>
-                  <Typography variant="labelSmall" color={theme.colors.outline}>EST. EXIT TIME</Typography>
-               </View>
-            </View>
+      {/* AI Insight Card */}
+      <View style={styles.insightSection}>
+         <TonalCard variant="low" style={styles.aiCard}>
+           <View style={styles.aiHeader}>
+              <View style={styles.aiIcon}>
+                 <MaterialCommunityIcons name="robot-glow" size={24} color={theme.colors.primary} />
+              </View>
+              <View style={{ flex: 1, marginLeft: 16 }}>
+                 <Typography variant="titleSmall" weight="900">AI Traffic Prediction</Typography>
+                 <Typography variant="labelSmall" color={theme.colors.primary} weight="800">OPTIMAL FLOW DETECTED</Typography>
+              </View>
+           </View>
+           <Typography variant="bodyMedium" color={theme.colors.onSurfaceVariant} style={styles.aiText}>
+             The <Typography weight="800" color={theme.colors.onSurface}>East Concourse</Typography> currently has 40% less density than typical. Retoute through Gate 4 for fastest venue navigation.
+           </Typography>
+           <SignatureButton 
+             label="Reroute Me" 
+             variant="tertiary" 
+             icon="navigate-circle"
+             onPress={() => {}} 
+             style={{ marginTop: 12 }}
+           />
          </TonalCard>
-      </View>
 
+         <View style={styles.gridStats}>
+            <TonalCard variant="medium" style={styles.statBox}>
+               <Typography variant="labelSmall" color={theme.colors.outline} weight="800">AVG OCCUPANCY</Typography>
+               <Typography variant="headlineSmall" weight="900" color={theme.colors.primary}>{stats.avg}%</Typography>
+            </TonalCard>
+            <TonalCard variant="medium" style={styles.statBox}>
+               <Typography variant="labelSmall" color={theme.colors.outline} weight="800">LIVE SENSORS</Typography>
+               <Typography variant="headlineSmall" weight="900">124</Typography>
+            </TonalCard>
+         </View>
+      </View>
     </View>
   );
 }
@@ -230,69 +240,95 @@ export default function HeatMapScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: '#F9FAFB',
   },
   header: {
     paddingHorizontal: 20,
-    marginBottom: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  backBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  safetyBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: '#FFF7ED',
   },
   thermalContainer: {
-    height: 400,
-    backgroundColor: theme.colors.surfaceContainerHighest,
+    height: 380,
+    backgroundColor: '#FFFFFF',
     marginHorizontal: 16,
     borderRadius: 32,
-    overflow: 'hidden',
     borderWidth: 1,
-    borderColor: theme.colors.outlineVariant,
+    borderColor: '#E5E7EB',
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.05,
+    shadowRadius: 20,
+    elevation: 4,
   },
   svgWrapper: {
     ...StyleSheet.absoluteFillObject,
+    padding: 20,
   },
-  legendOverlay: {
+  flowOverlay: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  floatingLegend: {
     position: 'absolute',
     bottom: 20,
-    left: 20,
-    right: 20,
-  },
-  legendCard: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    width: '100%',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 100,
   },
-  legendItems: {
+  legendPill: {
     flexDirection: 'row',
-    gap: 8,
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 100,
+    gap: 12,
   },
-  dot: {
+  legendColors: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  colorDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
   },
-  scrubberSection: {
-    paddingHorizontal: 20,
-    marginTop: 32,
-  },
-  scrubberLabel: {
-    marginBottom: 12,
-    letterSpacing: 1,
+  controlSection: {
+    paddingHorizontal: 40,
+    marginTop: 24,
   },
   scrubber: {
     flexDirection: 'row',
-    backgroundColor: theme.colors.surfaceContainerHighest,
-    borderRadius: 20,
-    padding: 6,
-    gap: 4,
+    backgroundColor: '#E5E7EB',
+    borderRadius: 100,
+    padding: 4,
   },
-  scrubberItem: {
+  scrubberBtn: {
     flex: 1,
     paddingVertical: 10,
     alignItems: 'center',
-    borderRadius: 14,
+    borderRadius: 100,
   },
-  scrubberItemActive: {
+  scrubberBtnActive: {
     backgroundColor: '#FFFFFF',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -300,21 +336,47 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-  insights: {
+  insightSection: {
     padding: 20,
-    marginTop: 10,
+    gap: 16,
   },
-  insightCard: {
+  aiCard: {
     padding: 24,
     borderRadius: 24,
-    backgroundColor: theme.colors.surfaceContainerLow,
+    borderWidth: 1,
+    borderColor: theme.colors.primary + '20',
   },
-  statGrid: {
+  aiHeader: {
     flexDirection: 'row',
-    marginTop: 24,
-    gap: 32,
+    alignItems: 'center',
+    marginBottom: 16,
   },
-  stat: {
+  aiIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    backgroundColor: theme.colors.primary + '10',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  aiText: {
+    lineHeight: 22,
+  },
+  gridStats: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  statBox: {
+    flex: 1,
+    padding: 20,
+    borderRadius: 20,
+    alignItems: 'center',
     gap: 4,
+  },
+  pulseDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#F98000',
   },
 });

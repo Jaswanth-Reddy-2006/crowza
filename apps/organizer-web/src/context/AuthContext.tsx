@@ -1,20 +1,22 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { UserRole, type User } from '@crowza/shared';
+import { type User } from '@crowza/shared';
 
 interface AuthContextType {
   isAuthenticated: boolean;
   user: User | null;
   loading: boolean;
-  loginProvider: (token: string, user: User) => void;
-  logoutProvider: () => void;
+  login: (email: string, pass: string) => Promise<void>;
+  register: (email: string, pass: string, data: any) => Promise<void>;
+  logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   user: null,
   loading: true,
-  loginProvider: () => {},
-  logoutProvider: () => {},
+  login: async () => {},
+  register: async () => {},
+  logout: () => {},
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -23,7 +25,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check localStorage for persist
     const storedUser = localStorage.getItem('crowza_organizer_user');
     const token = localStorage.getItem('crowza_organizer_token');
     
@@ -34,14 +35,41 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setLoading(false);
   }, []);
 
-  const loginProvider = (token: string, user: User) => {
-    localStorage.setItem('crowza_organizer_token', token);
-    localStorage.setItem('crowza_organizer_user', JSON.stringify(user));
-    setUser(user);
+  const login = async (email: string, pass: string) => {
+    // Simulated successful login for now
+    if (!email || !pass) throw new Error('Invalid credentials');
+    
+    const mockUser: User = { 
+      id: 'mock-1', 
+      email, 
+      role: 'organizer' as any, 
+      name: email.split('@')[0] 
+    };
+    
+    localStorage.setItem('crowza_organizer_token', 'mock_token');
+    localStorage.setItem('crowza_organizer_user', JSON.stringify(mockUser));
+    setUser(mockUser);
     setIsAuthenticated(true);
   };
 
-  const logoutProvider = () => {
+  const register = async (email: string, pass: string, data: any) => {
+    // Simulated successful registration
+    if (!email || !pass) throw new Error('Details missing');
+    
+    const mockUser: User = { 
+      id: 'mock-2', 
+      email, 
+      role: 'organizer' as any, 
+      name: data.fullName || email.split('@')[0] 
+    };
+    
+    localStorage.setItem('crowza_organizer_token', 'mock_token');
+    localStorage.setItem('crowza_organizer_user', JSON.stringify(mockUser));
+    setUser(mockUser);
+    setIsAuthenticated(true);
+  };
+
+  const logout = () => {
     localStorage.removeItem('crowza_organizer_token');
     localStorage.removeItem('crowza_organizer_user');
     setUser(null);
@@ -49,7 +77,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, loading, loginProvider, logoutProvider }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, loading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

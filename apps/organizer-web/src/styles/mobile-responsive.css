@@ -1,0 +1,419 @@
+/* MOBILE-SPECIFIC ENHANCEMENTS */
+
+/* Ensure all inputs have proper touch size and iOS compatibility */
+@media (max-width: 768px) {
+  input,
+  textarea,
+  select,
+  button {
+    font-size: 16px !important;
+    min-height: 44px !important;
+  }
+
+  /* Mobile button optimizations */
+  button {
+    padding: 12px 16px !important;
+    min-width: 44px !important;
+  }
+
+  /* Mobile form optimization */
+  form {
+    width: 100%;
+  }
+
+  form input,
+  form textarea,
+  form select {
+    width: 100% !important;
+    box-sizing: border-box;
+    padding: 12px 12px !important;
+  }
+
+  /* Stack form fields on mobile */
+  form > div {
+    width: 100% !important;
+    margin-bottom: 1rem;
+  }
+
+  /* Mobile navigation stack */
+  nav {
+    display: flex !important;
+    flex-direction: column;
+    gap: 0.5rem !important;
+  }
+
+  nav button {
+    width: 100%;
+    justify-content: center;
+    padding: 10px 16px !important;
+  }
+
+  /* Mobile modals - full screen */
+  [role="dialog"],
+  .modal,
+  .dialog {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: 100% !important;
+    border-radius: 0 !important;
+  }
+
+  /* Mobile table - convert to cards */
+  table {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    display: block;
+  }
+
+  thead {
+    display: none;
+  }
+
+  tbody,
+  tr {
+    display: block;
+    margin-bottom: 1rem;
+    border: 1px solid #E5E7EB;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    background: #FFFFFF;
+  }
+
+  td {
+    display: block;
+    text-align: left;
+    padding: 0.5rem 0;
+    border: none;
+  }
+
+  td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    display: block;
+    font-size: 0.85rem;
+    color: #6B7280;
+    margin-bottom: 0.25rem;
+  }
+
+  /* Mobile grid - single column */
+  [style*="display: grid"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Mobile card spacing */
+  .card,
+  [style*="border: 1px solid"] {
+    margin-bottom: 1rem;
+    padding: clamp(1rem, 2vw, 1.5rem);
+  }
+
+  /* Mobile tabs - horizontal scroll */
+  [role="tablist"],
+  .tab-bar,
+  .tab-list {
+    display: flex;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 0.5rem;
+    margin: 0 -1rem;
+    padding: 0 1rem;
+    border-bottom: 1px solid #E5E7EB;
+  }
+
+  [role="tab"],
+  .tab {
+    white-space: nowrap;
+    padding: 0.75rem 1rem;
+    min-width: 100px;
+    flex-shrink: 0;
+  }
+
+  /* Mobile spacing utilities */
+  .p-responsive {
+    padding: 1rem !important;
+  }
+
+  /* Hide unnecessary elements on mobile */
+  .hide-mobile {
+    display: none !important;
+  }
+
+  /* Make images responsive */
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Mobile paragraph text size */
+  p {
+    font-size: clamp(0.875rem, 2vw, 1rem);
+  }
+
+  /* Mobile heading sizes */
+  h1 {
+    font-size: clamp(1.5rem, 4vw, 2rem);
+  }
+
+  h2 {
+    font-size: clamp(1.25rem, 3vw, 1.75rem);
+  }
+
+  h3 {
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
+  }
+}
+
+/* Tablet optimizations (768px - 1024px) */
+@media (min-width: 768px) and (max-width: 1024px) {
+  input,
+  textarea,
+  select,
+  button {
+    font-size: 15px !important;
+  }
+
+  /* Tablet grid - 2 columns */
+  [style*="display: grid"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .card {
+    padding: clamp(1.25rem, 2vw, 1.75rem);
+  }
+
+  /* Tablet table - horizontal scroll still */
+  table {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Desktop optimizations (1024px+) */
+@media (min-width: 1024px) {
+  .hide-desktop {
+    display: none !important;
+  }
+
+  /* Show full headers on desktop tables */
+  thead {
+    display: table-header-group;
+  }
+
+  td::before {
+    display: none;
+  }
+
+  /* Desktop grid - 3+ columns */
+  [style*="repeat(auto-fill"] {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)) !important;
+  }
+}
+
+/* Landscape orientation fixes */
+@media (max-height: 500px) and (orientation: landscape) {
+  header,
+  nav {
+    padding: 0.5rem !important;
+    height: auto !important;
+  }
+
+  main {
+    padding-top: 4rem !important;
+  }
+
+  button {
+    padding: 0.5rem 1rem !important;
+    min-height: 36px !important;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  button,
+  a,
+  [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.75rem;
+  }
+
+  button:active {
+    opacity: 0.8;
+  }
+
+  /* Larger spacing for touch */
+  * {
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  /* Remove hover-only elements on touch */
+  *:hover::after {
+    display: none;
+  }
+}
+
+/* High density displays (retina) */
+@media (-webkit-min-device-pixel-ratio: 2),
+       (min-resolution: 192dpi) {
+  button,
+  input,
+  textarea {
+    border-width: 0.5px;
+  }
+}
+
+/* Print styles */
+@media print {
+  nav,
+  button:not(.print-button),
+  [role="navigation"] {
+    display: none !important;
+  }
+
+  body {
+    font-size: 12pt;
+  }
+
+  .container {
+    max-width: 100%;
+    padding: 0;
+  }
+}
+
+/* Safe areas for notch devices */
+@supports (padding: max(0px)) {
+  body {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+
+  nav {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  /* Add dark mode support if needed */
+}
+
+/* Fix for 100vh on mobile (address bar issue) */
+@media (max-height: 800px) {
+  body,
+  html {
+    min-height: 100%;
+    height: 100%;
+  }
+}
+
+/* Ensure sticky headers work properly on mobile */
+nav {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+/* Mobile-friendly focus states */
+@media (hover: none) {
+  button:focus,
+  input:focus,
+  a:focus {
+    outline: 2px solid #2563EB;
+    outline-offset: 2px;
+  }
+}
+
+/* Responsive spacing system */
+.gap-responsive {
+  gap: clamp(0.5rem, 2vw, 1rem);
+}
+
+.gap-lg-responsive {
+  gap: clamp(1rem, 3vw, 2rem);
+}
+
+.p-responsive {
+  padding: clamp(1rem, 3vw, 2rem);
+}
+
+.px-responsive {
+  padding-left: clamp(0.75rem, 2vw, 1.5rem);
+  padding-right: clamp(0.75rem, 2vw, 1.5rem);
+}
+
+.py-responsive {
+  padding-top: clamp(0.75rem, 2vw, 1.5rem);
+  padding-bottom: clamp(0.75rem, 2vw, 1.5rem);
+}
+
+.m-responsive {
+  margin: clamp(1rem, 3vw, 2rem);
+}
+
+.mb-responsive {
+  margin-bottom: clamp(1rem, 2vw, 1.5rem);
+}
+
+/* Responsive typography helpers */
+.text-responsive-sm {
+  font-size: clamp(0.75rem, 1.5vw, 0.875rem);
+}
+
+.text-responsive-base {
+  font-size: clamp(0.875rem, 2vw, 1rem);
+}
+
+.text-responsive-lg {
+  font-size: clamp(1rem, 2.5vw, 1.125rem);
+}
+
+.text-responsive-xl {
+  font-size: clamp(1.125rem, 3vw, 1.25rem);
+}
+
+.text-responsive-2xl {
+  font-size: clamp(1.25rem, 3.5vw, 1.5rem);
+}
+
+.text-responsive-3xl {
+  font-size: clamp(1.5rem, 4vw, 1.875rem);
+}
+
+.text-responsive-4xl {
+  font-size: clamp(1.875rem, 5vw, 2.25rem);
+}
+
+/* Responsive flex direction */
+@media (max-width: 768px) {
+  .flex-responsive-col {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .flex-responsive-row {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .flex-responsive-row {
+    display: flex !important;
+    flex-direction: row !important;
+  }
+}

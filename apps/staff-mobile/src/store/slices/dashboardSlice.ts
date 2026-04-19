@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, @typescript-eslint/no-require-imports */
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import staffApiClient from '../../services/api/staffApiClient';
 
@@ -40,7 +41,7 @@ export const fetchDashboardMetrics = createAsyncThunk(
         incidentCount: incidentsRes.data.data.total,
         avgWaitTime: waitTimesRes.data.data.avgWaitMins,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch dashboard metrics');
     }
   }

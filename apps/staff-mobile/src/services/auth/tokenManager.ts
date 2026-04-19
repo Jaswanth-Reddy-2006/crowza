@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, @typescript-eslint/no-require-imports */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const TOKEN_KEY = '@staff_auth_token';
