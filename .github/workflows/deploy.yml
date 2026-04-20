@@ -13,16 +13,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Google Auth
         id: auth
-        uses: 'google-github-actions/auth@v1'
+        uses: 'google-github-actions/auth@v2'
         with:
           credentials_json: '${{ secrets.GCP_SA_KEY }}'
 
       - name: 'Set up Cloud SDK'
-        uses: 'google-github-actions/setup-gcloud@v1'
+        uses: 'google-github-actions/setup-gcloud@v2'
 
       - name: 'Configure Docker'
         run: gcloud auth configure-docker --quiet
@@ -35,7 +35,7 @@ jobs:
 
       - name: Deploy Backend
         id: deploy-backend
-        uses: 'google-github-actions/deploy-cloudrun@v1'
+        uses: 'google-github-actions/deploy-cloudrun@v2'
         with:
           service: 'venue-backend'
           image: 'gcr.io/${{ env.PROJECT_ID }}/venue-backend'
@@ -50,7 +50,7 @@ jobs:
           docker push gcr.io/${{ env.PROJECT_ID }}/venue-organizer-web
 
       - name: Deploy Organizer Web
-        uses: 'google-github-actions/deploy-cloudrun@v1'
+        uses: 'google-github-actions/deploy-cloudrun@v2'
         with:
           service: 'venue-organizer-web'
           image: 'gcr.io/${{ env.PROJECT_ID }}/venue-organizer-web'
@@ -65,7 +65,7 @@ jobs:
           docker push gcr.io/${{ env.PROJECT_ID }}/venue-attendee-web
 
       - name: Deploy Attendee Web
-        uses: 'google-github-actions/deploy-cloudrun@v1'
+        uses: 'google-github-actions/deploy-cloudrun@v2'
         with:
           service: 'venue-attendee-web'
           image: 'gcr.io/${{ env.PROJECT_ID }}/venue-attendee-web'
