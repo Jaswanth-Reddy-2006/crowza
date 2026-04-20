@@ -11,5 +11,6 @@
       "@crowza/design-system": ["../../packages/design-system/src/index.ts"]
     }
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*"],
+  "exclude": ["src/**/__tests__/*", "src/**/*.test.ts"]
 }

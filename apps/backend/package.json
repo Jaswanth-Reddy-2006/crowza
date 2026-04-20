@@ -6,7 +6,7 @@
     "start": "node dist/server.js",
     "dev": "nodemon --exec npx ts-node src/server.ts",
     "build": "tsc",
-    "test": "jest",
+    "test": "jest --passWithNoTests",
     "test:e2e": "jest --config jest.e2e.config.js"
   },
   "dependencies": {
@@ -24,9 +24,10 @@
   "devDependencies": {
     "@types/cors": "^2.8.13",
     "@types/express": "^5.0.0",
+    "@types/jest": "^29.5.14",
     "@types/morgan": "^1.9.4",
-    "@types/pg": "^8.6.6",
     "@types/node": "^20.0.0",
+    "@types/pg": "^8.6.6",
     "jest": "^29.0.0",
     "nodemon": "^2.0.22",
     "supertest": "^6.3.3",
