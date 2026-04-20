@@ -126,3 +126,33 @@ npx expo start --web
 
 Designed with **Stability, Real-time Intelligence, and User Safety** at its core.
 *Build Version 1.0.0-gold - Final Platform Release*
+
+## 🚀 Deployment
+
+The platform is configured for deployment to **Google Cloud Run** using **Cloud Build**.
+
+### 1. Prerequisites
+- [Google Cloud SDK](https://cloud.google.com/sdk/docs/install) installed.
+- Logged in and project set:
+  ```bash
+  gcloud auth login
+  gcloud config set project <YOUR_PROJECT_ID>
+  ```
+
+### 2. Deploy Backend (API Gateway)
+Run this from the monorepo root:
+```bash
+gcloud builds submit --config apps/backend/cloudbuild.yaml .
+```
+After deployment, note the **Service URL** (e.g., `https://venue-backend-xyz.a.run.app`).
+
+### 3. Deploy Frontend (Organizer Web)
+Run this from the monorepo root, replacing the placeholder with your Backend URL:
+```bash
+gcloud builds submit --config apps/organizer-web/cloudbuild.yaml \
+  --substitutions=_VITE_API_URL="https://your-backend-url.a.run.app/api" .
+```
+
+### 4. Verify
+Once both are deployed, navigate to the Frontend URL to view your live dashboard.
+
