@@ -32,10 +32,12 @@ module.exports = async function (env, argv) {
   config.resolve.alias = {
     // Start with Expo's base aliases (react-native -> react-native-web etc.)
     ...config.resolve.alias,
-    // Specific sub-path aliases MUST come before the general 'react-native' alias.
+    // Alias react-native sub-path imports to local shims.
+    // @expo/webpack-config/build/modules/AssetRegistry does NOT exist as a real file —
+    // so we provide our own shim guaranteed to exist at build time.
     'react-native/Libraries/Image/AssetRegistry': path.resolve(
-      workspaceRoot,
-      'node_modules/@expo/webpack-config/build/modules/AssetRegistry'
+      projectRoot,
+      'shims/AssetRegistry.js'
     ),
     // Native-only packages: alias to react-native-web (safe no-ops for web)
     'react-native-maps': path.resolve(workspaceRoot, 'node_modules/react-native-web'),

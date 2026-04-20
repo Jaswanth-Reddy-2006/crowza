@@ -28,6 +28,10 @@ ENV EXPO_PUBLIC_API_URL=$EXPO_PUBLIC_API_URL
 
 WORKDIR /app/apps/staff-mobile
 
+# NODE_PATH ensures Node.js resolves packages from the monorepo root (npm workspaces hoisting).
+# Without this, createExpoWebpackConfigAsync cannot find react-native-web from the app subdirectory.
+ENV NODE_PATH=/app/node_modules
+
 # Use webpack-based web export (stable in Expo 48, avoids Metro web Platform resolution issues)
 RUN npx expo export:web
 
