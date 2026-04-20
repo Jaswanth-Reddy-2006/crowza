@@ -6,6 +6,8 @@ on:
 env:
   PROJECT_ID: crowza
   REGION: us-central1
+  GAR_LOCATION: us-central1
+  REPOSITORY: venue-images
 
 jobs:
   deploy:
@@ -25,65 +27,69 @@ jobs:
         uses: 'google-github-actions/setup-gcloud@v2'
 
       - name: 'Configure Docker'
-        run: gcloud auth configure-docker --quiet
-
-
+        run: gcloud auth configure-docker ${{ env.GAR_LOCATION }}-docker.pkg.dev --quiet
 
       # --- BACKEND ---
       - name: Build and Push Backend
         run: |
-          docker build -t gcr.io/${{ env.PROJECT_ID }}/venue-backend -f apps/backend/docker/Dockerfile .
-          docker push gcr.io/${{ env.PROJECT_ID }}/venue-backend
+          docker build -t ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/venue-backend -f apps/backend/docker/Dockerfile .
+          docker push ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/venue-backend
 
       - name: Deploy Backend
-        id: deploy-backend
         uses: 'google-github-actions/deploy-cloudrun@v2'
         with:
           service: 'venue-backend'
-          image: 'gcr.io/${{ env.PROJECT_ID }}/venue-backend'
-          region: ${{ env.REGION }}
+          image: '${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/venue-backend'
+          region: '${{ env.REGION }}'
+          flags: '--allow-unauthenticated --port 3000'
 
       # --- ORGANIZER WEB ---
-      - name: Build and Push Organizer Web
+      - name: Build and Push Organizer
         run: |
-          docker build -t gcr.io/${{ env.PROJECT_ID }}/venue-organizer-web \
-            --build-arg VITE_API_URL=${{ steps.deploy-backend.outputs.url }}/api \
+          docker build \
+            --build-arg VITE_API_URL=https://venue-backend-crowza.a.run.app \
+            -t ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/venue-organizer-web \
             -f apps/organizer-web/docker/Dockerfile .
-          docker push gcr.io/${{ env.PROJECT_ID }}/venue-organizer-web
+          docker push ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/venue-organizer-web
 
-      - name: Deploy Organizer Web
+      - name: Deploy Organizer
         uses: 'google-github-actions/deploy-cloudrun@v2'
         with:
           service: 'venue-organizer-web'
-          image: 'gcr.io/${{ env.PROJECT_ID }}/venue-organizer-web'
-          region: ${{ env.REGION }}
+          image: '${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/venue-organizer-web'
+          region: '${{ env.REGION }}'
+          flags: '--allow-unauthenticated --port 8080'
 
-      # --- ATTENDEE MOBILE WEB ---
-      - name: Build and Push Attendee Web
+      # --- ATTENDEE MOBILE (WEB) ---
+      - name: Build and Push Attendee
         run: |
-          docker build -t gcr.io/${{ env.PROJECT_ID }}/venue-attendee-web \
-            --build-arg EXPO_PUBLIC_API_URL=${{ steps.deploy-backend.outputs.url }}/api \
+          docker build \
+            --build-arg EXPO_PUBLIC_API_URL=https://venue-backend-crowza.a.run.app \
+            -t ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/venue-attendee-web \
             -f apps/attendee-mobile/docker/Dockerfile .
-          docker push gcr.io/${{ env.PROJECT_ID }}/venue-attendee-web
+          docker push ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/venue-attendee-web
 
-      - name: Deploy Attendee Web
+      - name: Deploy Attendee
         uses: 'google-github-actions/deploy-cloudrun@v2'
         with:
           service: 'venue-attendee-web'
-          image: 'gcr.io/${{ env.PROJECT_ID }}/venue-attendee-web'
-          region: ${{ env.REGION }}
+          image: '${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/venue-attendee-web'
+          region: '${{ env.REGION }}'
+          flags: '--allow-unauthenticated --port 8080'
 
-      # --- STAFF MOBILE WEB ---
-      - name: Build and Push Staff Web
+      # --- STAFF MOBILE (WEB) ---
+      - name: Build and Push Staff
         run: |
-          docker build -t gcr.io/${{ env.PROJECT_ID }}/venue-staff-web \
-            --build-arg EXPO_PUBLIC_API_URL=${{ steps.deploy-backend.outputs.url }}/api \
+          docker build \
+            --build-arg EXPO_PUBLIC_API_URL=https://venue-backend-crowza.a.run.app \
+            -t ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/venue-staff-web \
             -f apps/staff-mobile/docker/Dockerfile .
-          docker push gcr.io/${{ env.PROJECT_ID }}/venue-staff-web
+          docker push ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/venue-staff-web
 
-      - name: Deploy Staff Web
-        uses: 'google-github-actions/deploy-cloudrun@v1'
+      - name: Deploy Staff
+        uses: 'google-github-actions/deploy-cloudrun@v2'
         with:
           service: 'venue-staff-web'
-          image: 'gcr.io/${{ env.PROJECT_ID }}/venue-staff-web'
-          region: ${{ env.REGION }}
+          image: '${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/venue-staff-web'
+          region: '${{ env.REGION }}'
+          flags: '--allow-unauthenticated --port 8080'
