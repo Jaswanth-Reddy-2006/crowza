@@ -15,4 +15,7 @@ config.resolver.nodeModulesPaths = [
   path.resolve(workspaceRoot, 'node_modules'),
 ];
 
+// 3. Force Metro to resolve modules from the project or workspace root
+config.resolver.disableHierarchicalLookup = true;
+
 module.exports = config;
