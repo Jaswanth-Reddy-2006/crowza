@@ -10,6 +10,9 @@ module.exports = async function (env, argv) {
           '@crowza/shared',
           'react-native-reanimated',
           '@react-native',
+          'react-native-svg',
+          'react-native-gesture-handler',
+          'react-native-maps',
         ],
       },
     },
@@ -36,6 +39,10 @@ module.exports = async function (env, argv) {
       workspaceRoot,
       'node_modules/@expo/webpack-config/build/modules/AssetRegistry'
     ),
+    // Native-only packages: alias to react-native-web (safe no-ops for web)
+    // react-native-gesture-handler has official web support, no stub needed
+    // react-native-maps: alias to a no-op so webpack doesn't fail
+    'react-native-maps': path.resolve(workspaceRoot, 'node_modules/react-native-web'),
     // Monorepo design system: use compiled dist (not src) since tsc builds it first
     '@crowza/design-system': path.resolve(workspaceRoot, 'packages/design-system/dist'),
   };

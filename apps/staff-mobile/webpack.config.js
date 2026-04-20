@@ -10,6 +10,9 @@ module.exports = async function (env, argv) {
           '@crowza/shared',
           'react-native-reanimated',
           '@react-native',
+          'react-native-svg',
+          'react-native-gesture-handler',
+          'react-native-maps',
         ],
       },
     },
@@ -30,12 +33,12 @@ module.exports = async function (env, argv) {
     // Start with Expo's base aliases (react-native -> react-native-web etc.)
     ...config.resolve.alias,
     // Specific sub-path aliases MUST come before the general 'react-native' alias.
-    // Without these, webpack appends /Libraries/... to the react-native-web path
-    // which produces a non-existent path and causes ModuleNotFoundError.
     'react-native/Libraries/Image/AssetRegistry': path.resolve(
       workspaceRoot,
       'node_modules/@expo/webpack-config/build/modules/AssetRegistry'
     ),
+    // Native-only packages: alias to react-native-web (safe no-ops for web)
+    'react-native-maps': path.resolve(workspaceRoot, 'node_modules/react-native-web'),
     // Monorepo design system: use compiled dist (not src) since tsc builds it first
     '@crowza/design-system': path.resolve(workspaceRoot, 'packages/design-system/dist'),
   };
