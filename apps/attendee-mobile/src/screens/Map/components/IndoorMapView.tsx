@@ -6,7 +6,7 @@ import {
   PanGestureHandler,
 } from 'react-native-gesture-handler';
 import Svg, { G, Text as SvgText, Path } from 'react-native-svg';
-import StadiumFloorPlan from '../components/Map/StadiumFloorPlan';
+import StadiumFloorPlan from '../../../components/Map/StadiumFloorPlan';
 import { theme } from '@crowza/design-system';
 
 interface IndoorMapViewProps {

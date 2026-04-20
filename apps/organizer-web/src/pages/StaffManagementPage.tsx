@@ -304,7 +304,7 @@ const StaffManagementPage: React.FC<StaffManagementProps> = ({ eventId, onBack }
             </div>
          </div>
       </div>
-      </div>
+
 
       {/* DEPLOYMENT MODAL */}
       {showAssignModal && (

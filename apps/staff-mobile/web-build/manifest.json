@@ -1,0 +1,21 @@
+{
+  "background_color": "#0A0A0A",
+  "display": "standalone",
+  "lang": "en",
+  "name": "Crowza Ops",
+  "short_name": "Crowza Ops",
+  "start_url": "/?utm_source=web_app_manifest",
+  "orientation": "portrait",
+  "related_applications": [
+    {
+      "platform": "itunes",
+      "id": "com.venue.staff"
+    },
+    {
+      "platform": "play",
+      "url": "http://play.google.com/store/apps/details?id=com.venue.staff",
+      "id": "com.venue.staff"
+    }
+  ],
+  "prefer_related_applications": true
+}

@@ -1,0 +1,23 @@
+{
+  "files": {
+    "main.js": "/static/js/main.f2848635.js",
+    "static/js/953.4ebfdc21.js": "/static/js/953.4ebfdc21.js",
+    "static/media/stadium_snow_v2.png": "/static/media/stadium_snow_v2.1681526ac8ecc7b55752.png",
+    "static/media/MaterialCommunityIcons.ttf": "/static/media/MaterialCommunityIcons.5d42b4e60858731e7b65.ttf",
+    "static/media/stadium_light.png": "/static/media/stadium_light.9d2f18a8d5e04ab76a17.png",
+    "static/media/crowza_logo.png": "/static/media/crowza_logo.1e66e3273327e7c85117.png",
+    "static/media/Ionicons.ttf": "/static/media/Ionicons.3517aeaa34b2f8cd8eef.ttf",
+    "favicon.ico": "/favicon.ico",
+    "index.html": "/index.html",
+    "favicon-32.png": "/favicon-32.png",
+    "favicon-16.png": "/favicon-16.png",
+    "manifest.json": "/manifest.json",
+    "serve.json": "/serve.json",
+    "main.f2848635.js.map": "/static/js/main.f2848635.js.map",
+    "953.4ebfdc21.js.map": "/static/js/953.4ebfdc21.js.map"
+  },
+  "entrypoints": [
+    "static/js/953.4ebfdc21.js",
+    "static/js/main.f2848635.js"
+  ]
+}
