@@ -1,0 +1,35 @@
+steps:
+  # Build the docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+      'build', 
+      '-t', 'gcr.io/$PROJECT_ID/venue-organizer-web', 
+      '-f', 'apps/organizer-web/docker/Dockerfile', 
+      '--build-arg', 'VITE_API_URL=$_VITE_API_URL',
+      '.'
+    ]
+
+  # Push the image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/venue-organizer-web']
+
+  # Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'venue-organizer-web'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/venue-organizer-web'
+      - '--region'
+      - 'us-central1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+
+images:
+  - 'gcr.io/$PROJECT_ID/venue-organizer-web'
+
+substitutions:
+  _VITE_API_URL: 'http://localhost:3000/api' # Default, should be overridden during build

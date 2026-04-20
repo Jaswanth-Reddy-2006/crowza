@@ -1,7 +1,7 @@
 steps:
   # Build the docker image
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/$PROJECT_ID/venue-backend', './apps/backend']
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/venue-backend', '-f', 'apps/backend/docker/Dockerfile', '.']
 
   # Push the image to Container Registry
   - name: 'gcr.io/cloud-builders/docker'
