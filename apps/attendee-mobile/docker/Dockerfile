@@ -11,9 +11,16 @@ COPY packages/design-system/package*.json ./packages/design-system/
 
 RUN npm install
 
-COPY apps/attendee-mobile ./apps/attendee-mobile
+# Copy packages source
 COPY packages/shared ./packages/shared
 COPY packages/design-system ./packages/design-system
+
+# Build dependencies
+RUN npm run build -w @crowza/shared
+RUN npm run build -w @crowza/design-system
+
+# Copy app source
+COPY apps/attendee-mobile ./apps/attendee-mobile
 
 # Inject API URL
 ARG EXPO_PUBLIC_API_URL

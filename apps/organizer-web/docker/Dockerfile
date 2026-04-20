@@ -11,8 +11,12 @@ COPY packages/shared/package*.json ./packages/shared/
 
 RUN npm install
 
-COPY apps/organizer-web ./apps/organizer-web
+# Copy shared package
 COPY packages/shared ./packages/shared
+RUN npm run build -w @crowza/shared
+
+# Copy app source
+COPY apps/organizer-web ./apps/organizer-web
 
 # Inject VITE_API_URL during build
 ARG VITE_API_URL
