@@ -27,7 +27,9 @@ ARG EXPO_PUBLIC_API_URL
 ENV EXPO_PUBLIC_API_URL=$EXPO_PUBLIC_API_URL
 
 WORKDIR /app/apps/attendee-mobile
-RUN npx expo export --platform web
+
+# Use webpack-based web export (stable in Expo 48, avoids Metro web Platform resolution issues)
+RUN npx expo export:web
 
 # Production stage
 FROM node:20-slim
@@ -36,7 +38,7 @@ WORKDIR /app
 
 RUN npm install -g sirv-cli
 
-COPY --from=builder /app/apps/attendee-mobile/dist ./dist
+COPY --from=builder /app/apps/attendee-mobile/web-build ./dist
 
 EXPOSE 8080
 
