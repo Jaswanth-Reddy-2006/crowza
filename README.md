@@ -132,7 +132,6 @@ The platform is now configured for fully automated deployment to **Google Cloud 
 
 ### 1. Setup GitHub Secrets
 To enable the pipeline, go to your GitHub Repository Settings > Secrets and Variables > Actions and add:
-- `GCP_PROJECT_ID`: `crowza`
 - `GCP_SA_KEY`: Your Google Cloud Service Account JSON key.
 
 ### 2. Deployment Flow
