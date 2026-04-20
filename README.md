@@ -125,34 +125,27 @@ npx expo start --web
 ---
 
 Designed with **Stability, Real-time Intelligence, and User Safety** at its core.
-*Build Version 1.0.0-gold - Final Platform Release*
 
-## 🚀 Deployment
+## 🚀 Automated Deployment
 
-The platform is configured for deployment to **Google Cloud Run** using **Cloud Build**.
+The platform is now configured for fully automated deployment to **Google Cloud Run** via **GitHub Actions**.
 
-### 1. Prerequisites
-- [Google Cloud SDK](https://cloud.google.com/sdk/docs/install) installed.
-- Logged in and project set:
-  ```bash
-  gcloud auth login
-  gcloud config set project <YOUR_PROJECT_ID>
-  ```
+### 1. Setup GitHub Secrets
+To enable the pipeline, go to your GitHub Repository Settings > Secrets and Variables > Actions and add:
+- `GCP_PROJECT_ID`: `crowza`
+- `GCP_SA_KEY`: Your Google Cloud Service Account JSON key.
 
-### 2. Deploy Backend (API Gateway)
-Run this from the monorepo root:
-```bash
-gcloud builds submit --config apps/backend/cloudbuild.yaml .
-```
-After deployment, note the **Service URL** (e.g., `https://venue-backend-xyz.a.run.app`).
+### 2. Deployment Flow
+Every push to the `main` branch will trigger the following:
+1. **API Backend**: Deploys the central gateway.
+2. **Dashboard**: Deploys the Organizer Web dashboard, automatically linked to the API.
+3. **Attendee App**: Deploys the web version of the Attendee mobile app.
+4. **Staff App**: Deploys the web version of the Staff mobile app.
 
-### 3. Deploy Frontend (Organizer Web)
-Run this from the monorepo root, replacing the placeholder with your Backend URL:
-```bash
-gcloud builds submit --config apps/organizer-web/cloudbuild.yaml \
-  --substitutions=_VITE_API_URL="https://your-backend-url.a.run.app/api" .
-```
-
-### 4. Verify
-Once both are deployed, navigate to the Frontend URL to view your live dashboard.
+### 3. Production URLs
+Once deployed, you can access the three platforms at:
+- **Organizer Dashboard**: `https://venue-organizer-web-crowza.a.run.app`
+- **Attendee App (Web)**: `https://venue-attendee-web-crowza.a.run.app`
+- **Staff App (Web)**: `https://venue-staff-web-crowza.a.run.app`
+*(Note: Actual URLs may vary slightly based on Cloud Run's generation)*
 

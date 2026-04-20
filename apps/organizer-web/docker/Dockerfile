@@ -3,9 +3,6 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-# Enable corepack for modern package managers if needed
-# RUN corepack enable
-
 COPY package*.json ./
 COPY tsconfig.json ./
 COPY turbo.json* ./
@@ -28,12 +25,10 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# Install a simple static file server
 RUN npm install -g sirv-cli
 
 COPY --from=builder /app/apps/organizer-web/dist ./dist
 
 EXPOSE 8080
 
-# Serve the static files on port 8080 (Cloud Run default)
 CMD ["sirv", "dist", "--port", "8080", "--single", "--host", "0.0.0.0"]
