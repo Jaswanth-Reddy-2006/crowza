@@ -18,15 +18,10 @@ config.resolver.nodeModulesPaths = [
 // 3. Force Metro to resolve modules from the project or workspace root
 config.resolver.disableHierarchicalLookup = true;
 
-// 4. Explicitly alias react-native to react-native-web for web builds
-config.resolver.alias = {
-  'react-native': 'react-native-web',
+// 4. Use extraNodeModules to definitively alias react-native to react-native-web
+config.resolver.extraNodeModules = {
+  ...config.resolver.extraNodeModules,
+  'react-native': path.resolve(projectRoot, 'node_modules/react-native-web'),
 };
-
-// 5. Ensure web extensions are prioritized
-config.resolver.sourceExts = [
-  'web.ts', 'web.tsx', 'web.js', 'web.jsx',
-  'ts', 'tsx', 'js', 'jsx', 'json'
-];
 
 module.exports = config;
