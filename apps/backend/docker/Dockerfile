@@ -16,7 +16,7 @@ COPY packages/shared ./packages/shared
 RUN npm run build -w @venue/backend
 
 # Production stage
-FROM node:18-alpine
+FROM node:20-alpine
 
 WORKDIR /app
 
