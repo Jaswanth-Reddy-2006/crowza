@@ -28,10 +28,6 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": [
-      "expo-location",
-      "expo-notifications"
-    ],
     "updates": {
       "enabled": false
     }
