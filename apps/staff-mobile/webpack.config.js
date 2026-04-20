@@ -16,23 +16,21 @@ module.exports = async function (env, argv) {
     argv
   );
 
-  // Configure module resolution to use compiled dist for design-system
-  if (!config.resolve) {
-    config.resolve = {};
-  }
-  if (!config.resolve.alias) {
-    config.resolve.alias = {};
-  }
-  
-  config.resolve.alias['@crowza/design-system'] = path.resolve(
-    __dirname,
-    '../../packages/design-system/dist'
-  );
+  const projectRoot = __dirname;
+  const workspaceRoot = path.resolve(projectRoot, '../..');
 
-  // Explicitly set port to avoid conflicts with attendee-mobile
-  config.devServer = {
-    ...config.devServer,
-    port: 19011,
+  // Configure module resolution for monorepo
+  if (!config.resolve) config.resolve = {};
+  config.resolve.modules = [
+    path.resolve(projectRoot, 'node_modules'),
+    path.resolve(workspaceRoot, 'node_modules'),
+  ];
+
+  config.resolve.alias = {
+    ...config.resolve.alias,
+    'react-native': path.resolve(workspaceRoot, 'node_modules/react-native-web'),
+    'react-native-maps': path.resolve(workspaceRoot, 'node_modules/react-native-web'),
+    '@crowza/design-system': path.resolve(workspaceRoot, 'packages/design-system/dist'),
   };
 
   return config;
